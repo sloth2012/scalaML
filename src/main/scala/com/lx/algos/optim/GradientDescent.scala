@@ -1,13 +1,17 @@
-package com.lx.algos.optim
 
-import breeze.linalg.{DenseVector, Matrix, max, norm, shuffle, split, vsplit}
-import breeze.numerics.{abs, pow}
+package com.lx.algos.optim
+/**
+  *
+  * @project scalaML
+  * @author lx on 4:57 PM 16/11/2017
+  */
+
+import breeze.linalg.{DenseVector, Matrix, norm}
 import com.lx.algos._
 import com.lx.algos.loss.LossFunction
 import com.lx.algos.metrics.ClassificationMetrics
 import com.lx.algos.utils.MatrixTools
 
-import scala.util.Random
 import scala.util.control.Breaks._
 
 trait Optimizer {
@@ -175,7 +179,6 @@ class SGD(var eta: Double, //学习速率
 
         if (verbose) {
           if ((epoch + 1) % print_period == 0 || epoch == iterNum - 1) {
-            println(converged, avg_loss - last_avg_loss)
             val acc = ClassificationMetrics.accuracy_score(predict(X), y)
             log_print(epoch, acc, avg_loss)
           }
@@ -264,7 +267,6 @@ class MBGD(var eta: Double, //学习速率
 
         if (verbose) {
           if ((epoch + 1) % print_period == 0 || epoch == iterNum - 1) {
-            println(converged, avg_loss - last_avg_loss)
             val acc = ClassificationMetrics.accuracy_score(predict(X), y)
             log_print(epoch, acc, avg_loss)
           }

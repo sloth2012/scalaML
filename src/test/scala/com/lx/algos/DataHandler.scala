@@ -1,4 +1,9 @@
 package com.lx.algos
+/**
+  *
+  * @project scalaML
+  * @author lx on 5:57 PM 16/11/2017
+  */
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 

@@ -1,4 +1,9 @@
 package com.lx.algos.metrics
+/**
+  *
+  * @project scalaML
+  * @author lx on 1:57 PM 16/11/2017
+  */
 
 object ClassificationMetrics {
   def accuracy_score(y_true: Seq[Double], y_pred: Seq[Double]): Double = {

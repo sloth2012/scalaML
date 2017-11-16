@@ -1,4 +1,9 @@
 package com.lx.algos.utils
+/**
+  *
+  * @project scalaML
+  * @author lx on 5:37 PM 16/11/2017
+  */
 
 import breeze.linalg.DenseMatrix
 import breeze.storage.Zero

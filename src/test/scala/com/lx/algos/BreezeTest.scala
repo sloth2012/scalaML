@@ -1,4 +1,9 @@
 package com.lx.algos
+/**
+  *
+  * @project scalaML
+  * @author lx on 6:21 PM 16/11/2017
+  */
 
 import org.scalatest.FlatSpec
 import breeze.linalg._

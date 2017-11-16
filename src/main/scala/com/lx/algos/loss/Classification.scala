@@ -1,4 +1,9 @@
 package com.lx.algos.loss
+/**
+  *
+  * @project scalaML
+  * @author lx on 2:57 PM 15/11/2017
+  */
 
 trait Classification extends LossFunction
 

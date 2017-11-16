@@ -1,5 +1,9 @@
 package com.lx.algos.loss
-
+/**
+  *
+  * @project scalaML
+  * @author lx on 2:59 PM 15/11/2017
+  */
 //所有的回归损失函数都能供分类使用，但是分类的不能直接拿来为回归使用
 trait Regression extends LossFunction
 
