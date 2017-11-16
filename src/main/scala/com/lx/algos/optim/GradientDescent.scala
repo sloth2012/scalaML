@@ -15,7 +15,7 @@ import com.lx.algos.utils.MatrixTools
 import scala.util.control.Breaks._
 
 trait Optimizer {
-  var MIN_LOSS: Double = 1e-5
+  var MIN_LOSS: Double = 1e-6
 
 
   var weight: DenseVector[Double] = null
