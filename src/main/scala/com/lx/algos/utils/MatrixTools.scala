@@ -53,11 +53,4 @@ object MatrixTools {
     (new_X, new_y)
   }
 
-//  def sameElement[T: ClassTag](a: DenseMatrix[T], b: DenseMatrix[T]): Boolean  = {
-//
-//    val w = Seq(1).toArray
-//
-//    w.sameElements()
-//  }
-
 }
