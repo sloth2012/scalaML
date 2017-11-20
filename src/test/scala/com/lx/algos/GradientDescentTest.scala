@@ -22,8 +22,8 @@ class GradientDescentTest extends FlatSpec {
     val sgd = new SGD
     sgd.set_verbose(true)
       .set_printPeriod(1)
-//        .set_eta(0.0001)
-      .set_nesterov(true)
+        .set_eta(0.0001)
+//      .set_nesterov(true)
 
     sgd.fit(x, y.toArray.toSeq)
   }

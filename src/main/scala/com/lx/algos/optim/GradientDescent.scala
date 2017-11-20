@@ -133,14 +133,19 @@ class SGD extends Optimizer with Param {
 
           val grad = dloss * ele
           if (nesterov) {
-            //nestrov momentum update
-            velocity  = velocity * gamma + grad + (grad - last_grad) * gamma
+            //nestrov momentum update, origin paper version
+            //            velocity  = velocity * gamma + grad + (grad - last_grad) * gamma
+
+            //pytorch version, really fast
+            velocity = velocity * gamma + grad
+            weight += -eta * velocity
           } else {
             //momentum update
-            velocity = gamma * velocity + grad
+            velocity = gamma * velocity + grad * eta
+            weight += -velocity
           }
 
-          weight += -eta * velocity
+
           intercept += -dloss * eta
 
           totalLoss += loss.loss(y_pred, y_format)
