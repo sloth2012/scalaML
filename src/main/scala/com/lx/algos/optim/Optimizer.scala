@@ -10,7 +10,7 @@ import breeze.linalg.{DenseVector, Matrix, norm}
 
 
 trait Optimizer {
-  var MIN_LOSS: Double = 1e-6
+  var MIN_LOSS: Double = 1e-9
 
 
   var weight: DenseVector[Double] = null

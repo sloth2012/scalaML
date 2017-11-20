@@ -25,6 +25,7 @@ class SGD extends Optimizer with Param {
       "eta" -> 0.01, //learning_rate
       "lambda" -> 0.15, // 正则化权重
       "gamma" -> 0.9, //动量参数
+      "nesterov" -> false, // NAG支持，改良版，需要配合gamma参数
       "verbose" -> false, //打印日志
       "printPeriod" -> 100,
       "penalty" -> "l2", //正则化系数，暂只实现l2
@@ -56,8 +57,10 @@ class SGD extends Optimizer with Param {
 
   def gamma = getParam[Double]("gamma")
 
+  def nesterov = getParam[Boolean]("nesterov")
 
-  override def setParam[T: ClassTag](name: String,  value: T) = {
+
+  override def setParam[T: ClassTag](name: String, value: T) = {
     super.setParam[T](name, value)
     this
   }
@@ -85,6 +88,7 @@ class SGD extends Optimizer with Param {
 
   def set_gamma(gamma: Double) = setParam[Double]("gamma", gamma)
 
+  def set_nesterov(nesterov: Boolean) = setParam[Boolean]("nesterov", nesterov)
 
   def get_minibatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
 
@@ -106,7 +110,7 @@ class SGD extends Optimizer with Param {
 
     breakable {
       var last_avg_loss = Double.MaxValue
-
+      var last_grad = DenseVector.zeros[Double](x.cols)
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
@@ -123,21 +127,24 @@ class SGD extends Optimizer with Param {
           else if (dloss > MAX_DLOSS) MAX_DLOSS
           else dloss
 
-
-          if (penalty == "l2") scaleWeights(Math.max(0, 1 - eta * lambda))
-
-
-          val update = -eta * dloss
-
-          //momentum update
-          {
-            velocity = gamma * velocity + update * ele
-
-            weight += velocity
-            intercept += update
+          if (penalty == "l2") {
+            scaleWeights(Math.max(0, 1 - eta * lambda))
           }
 
+          val grad = dloss * ele
+          if (nesterov) {
+            //nestrov momentum update
+            velocity  = velocity * gamma + grad + (grad - last_grad) * gamma
+          } else {
+            //momentum update
+            velocity = gamma * velocity + grad
+          }
+
+          weight += -eta * velocity
+          intercept += -dloss * eta
+
           totalLoss += loss.loss(y_pred, y_format)
+          last_grad = grad
         }
         val avg_loss = totalLoss / x.rows
 
