@@ -20,7 +20,7 @@ import scala.util.control.Breaks.{break, breakable}
 class SGD extends Optimizer with Param {
 
 
-  private def init_param(): SGD = {
+  protected def init_param(): SGD = {
     setParams(Seq(
       "eta" -> 0.01, //learning_rate
       "lambda" -> 0.15, // 正则化权重,weigjht decay

@@ -20,7 +20,7 @@ import scala.util.control.Breaks.{break, breakable}
 class AdaGrad extends Optimizer with Param {
 
 
-  private def init_param(): AdaGrad = {
+  protected def init_param(): AdaGrad = {
     setParams(Seq(
       "eta" -> 0.01, //learning_rate
       "lambda" -> 0.15, // 正则化权重,weigjht decay
@@ -130,10 +130,10 @@ class AdaGrad extends Optimizer with Param {
 
           cache_grad += grad *:* grad
 
-          val lr = eta / sqrt(cache_grad + eps)
+          val lr_grad = eta / sqrt(cache_grad + eps)
 
-          weight += -lr *:* grad
-//          intercept += -eta * dloss
+          weight += -lr_grad *:* grad
+          intercept += -eta * dloss
 
           totalLoss += loss.loss(y_pred, y_format)
         }
