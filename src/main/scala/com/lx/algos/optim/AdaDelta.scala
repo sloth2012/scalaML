@@ -3,7 +3,6 @@ package com.lx.algos.optim
 import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.MAX_DLOSS
-import com.lx.algos.loss.LogLoss
 import com.lx.algos.metrics.ClassificationMetrics
 
 import scala.reflect.ClassTag
@@ -12,25 +11,23 @@ import scala.util.control.Breaks.{break, breakable}
 /**
   *
   * @project scalaML
-  * @author lx on 5:00 PM 21/11/2017
+  * @author lx on 9:09 PM 21/11/2017
   */
 
-class RMSProp extends AdaGrad {
+class AdaDelta extends AdaGrad{
 
-  override protected def init_param(): RMSProp = {
+  override protected def init_param(): AdaDelta = {
 
     super.init_param()
 
     setParams(Seq(
-      "gamma" -> 0.9, //梯度累加信息的衰减指数
-      "eta" -> 0.001 //Hiton建议的设置
+      "gamma" -> 0.95 //梯度累加信息的衰减指数
     ))
 
     this
   }
 
   init_param()
-
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
@@ -41,6 +38,7 @@ class RMSProp extends AdaGrad {
     breakable {
       var last_avg_loss = Double.MaxValue
       var cache_grad = DenseVector.zeros[Double](x.cols)
+      var cache_delateT = DenseVector.zeros[Double](x.cols)
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
@@ -66,9 +64,10 @@ class RMSProp extends AdaGrad {
           val grad = dloss * ele
 
           cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
-          val lr_grad = eta / sqrt(cache_grad + eps)
+          val deltaT = - sqrt(cache_delateT + eps) / sqrt(cache_grad + eps) *:* grad
+          cache_delateT = gamma * cache_delateT + (1 - gamma) * deltaT *:* deltaT
 
-          weight += -lr_grad *:* grad
+          weight += deltaT
 //          intercept += -eta * dloss
 
           totalLoss += loss.loss(y_pred, y_format)
@@ -96,4 +95,5 @@ class RMSProp extends AdaGrad {
 
     this
   }
+
 }

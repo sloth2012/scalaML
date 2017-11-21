@@ -65,6 +65,11 @@ class AdaGrad extends Optimizer with Param {
 
   def lambda = getParam[Double]("lambda")
 
+  def gamma = getParam[Double]("gamma")
+
+
+
+  def set_gamma(gamma: Double) = setParam[Double]("gamma", gamma)
 
   def set_batchSize(batchSize: Int) = setParam[Int]("batchSize", batchSize)
 
@@ -133,7 +138,7 @@ class AdaGrad extends Optimizer with Param {
           val lr_grad = eta / sqrt(cache_grad + eps)
 
           weight += -lr_grad *:* grad
-          intercept += -eta * dloss
+//          intercept += -eta * dloss
 
           totalLoss += loss.loss(y_pred, y_format)
         }

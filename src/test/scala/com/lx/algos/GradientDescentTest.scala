@@ -2,7 +2,7 @@ package com.lx.algos
 
 import breeze.linalg.DenseVector
 import com.lx.algos.loss.LogLoss
-import com.lx.algos.optim.{AdaGrad, RMSProp, SGD}
+import com.lx.algos.optim.{AdaDelta, AdaGrad, RMSProp, SGD}
 import com.lx.algos.utils.MatrixTools
 import org.scalatest.FlatSpec
 
@@ -31,29 +31,34 @@ class GradientDescentTest extends FlatSpec {
 //        println(sgd.weight)
 //      }
 //
+//  {
+//    val adagrad = new AdaGrad
+//    adagrad.set_verbose(true)
+//      .set_printPeriod(100)
+//      .set_eta(0.01)
+//
+//    adagrad.fit(x, y.toArray.toSeq)
+//    println(adagrad.weight)
+//  }
+
+
+//  {
+//    val rmsprop = new RMSProp
+//    rmsprop.set_verbose(true)
+//      .set_printPeriod(1)
+//
+//    rmsprop.fit(x, y.toArray.toSeq)
+//    println(rmsprop.weight)
+//  }
+
   {
-    val adagrad = new AdaGrad
-    adagrad.set_verbose(true)
-      .set_printPeriod(100)
-      .set_eta(0.01)
-    //      .set_penalty("l1")
-    //      .set_nesterov(true)
-
-    adagrad.fit(x, y.toArray.toSeq)
-    println(adagrad.weight)
-  }
-
-
-  {
-    val rmsprop = new RMSProp
-    rmsprop.set_verbose(true)
+    val adadelta = new AdaDelta
+    adadelta.set_verbose(true)
       .set_printPeriod(1)
-      .set_eta(0.001)
-    //      .set_penalty("l1")
-    //      .set_nesterov(true)
+      .set_gamma(0.9)
+      .fit(x, y.toArray.toSeq)
 
-    rmsprop.fit(x, y.toArray.toSeq)
-    println(rmsprop.weight)
+    println(adadelta.weight)
   }
 
 }
