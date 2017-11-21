@@ -187,6 +187,7 @@ class BaseMSGD(var eta: Double, //学习速率
     if (minibatch_size >= y.size) Seq((X, y))
     else {
       val (new_X, new_y) = MatrixTools.shuffle(X, y)
+
       MatrixTools.vsplit(new_X, new_y, minibatch_size)
     }
   }
@@ -203,7 +204,7 @@ class BaseMSGD(var eta: Double, //学习速率
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
-        val batch_data = get_minibatch(x,y,batch)
+        val batch_data = get_minibatch(x, y, batch)
         for ((sub_x, sub_y) <- batch_data.asInstanceOf[Seq[(DenseMatrix[Double], Seq[Double])]]) {
           val delta_w = DenseVector.zeros[Double](x.cols)
           var delta_b: Double = 0.0
@@ -224,7 +225,6 @@ class BaseMSGD(var eta: Double, //学习速率
             delta_b += update
 
             totalLoss += loss.loss(y_pred, y_format)
-
           }
 
           if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))

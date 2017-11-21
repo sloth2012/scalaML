@@ -31,7 +31,7 @@ object MatrixTools {
 
     0 until batch_num map {
       i => val end_index = Math.min(mat.rows, (i+1)*batch)
-        (mat(i until end_index,  ::),  y.slice(i, end_index))
+        (mat(i * batch until end_index,  ::),  y.slice(i, end_index))
     }
   }
 

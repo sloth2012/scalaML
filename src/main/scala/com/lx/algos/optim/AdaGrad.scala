@@ -84,7 +84,7 @@ class AdaGrad extends Optimizer with Param {
 
 
   //TODO minibatch update
-  def get_minibatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
+  def get_minibzatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
 
     assert(X.rows == y.size)
     if (batchSize >= y.size) Seq((X, y))
