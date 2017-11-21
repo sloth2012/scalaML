@@ -23,7 +23,7 @@ class SGD extends Optimizer with Param {
   private def init_param(): SGD = {
     setParams(Seq(
       "eta" -> 0.01, //learning_rate
-      "lambda" -> 0.15, // 正则化权重
+      "lambda" -> 0.15, // 正则化权重,weigjht decay
       "gamma" -> 0.9, //动量参数
       "nesterov" -> false, // NAG支持，改良版，需要配合gamma参数
       "verbose" -> false, //打印日志
@@ -31,6 +31,7 @@ class SGD extends Optimizer with Param {
       "penalty" -> "l2", //正则化系数，暂只实现l2
       "iterNum" -> 1000, //迭代轮数
       "loss" -> new LogLoss,
+      "lr_schedule" -> "constant", //eta（learning_rate）更新策略, 共有{constant， adagrad, adadelta, adam, rmsprop}
       "batchSize" -> 128 //minibatch size，一个batc多少样本
     ))
 
@@ -38,6 +39,16 @@ class SGD extends Optimizer with Param {
   }
 
   init_param()
+
+  override def setParam[T: ClassTag](name: String, value: T) = {
+    super.setParam[T](name, value)
+    this
+  }
+
+  override def setParams[T <: Iterable[(String, Any)]](params: T) = {
+    super.setParams[T](params)
+    this
+  }
 
   def batchSize = getParam[Int]("batchSize")
 
@@ -59,16 +70,9 @@ class SGD extends Optimizer with Param {
 
   def nesterov = getParam[Boolean]("nesterov")
 
+  def lr_schedule = getParam[String]("lr_schedule")
 
-  override def setParam[T: ClassTag](name: String, value: T) = {
-    super.setParam[T](name, value)
-    this
-  }
 
-  override def setParams[T <: Iterable[(String, Any)]](params: T) = {
-    super.setParams[T](params)
-    this
-  }
 
   def set_batchSize(batchSize: Int) = setParam[Int]("batchSize", batchSize)
 
@@ -89,6 +93,8 @@ class SGD extends Optimizer with Param {
   def set_gamma(gamma: Double) = setParam[Double]("gamma", gamma)
 
   def set_nesterov(nesterov: Boolean) = setParam[Boolean]("nesterov", nesterov)
+
+  def set_lr_schedule(lr_schedule: String) = setParam[String]("lr_schedule", lr_schedule)
 
   def get_minibatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
 
@@ -128,7 +134,9 @@ class SGD extends Optimizer with Param {
           else dloss
 
           if (penalty == "l2") {
-            scaleWeights(Math.max(0, 1 - eta * lambda))
+            l2penalty(Math.max(0, 1 - eta * lambda))
+          } else{
+            l1penalty(eta, lambda)
           }
 
           val grad = dloss * ele

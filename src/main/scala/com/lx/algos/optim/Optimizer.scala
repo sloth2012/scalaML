@@ -23,8 +23,14 @@ trait Optimizer {
   def predict_proba(X: Matrix[Double]): Seq[Double]
 
   // Performs L2 regularization scaling
-  def scaleWeights(n: Double): Unit = {
+  def l2penalty(n: Double): Unit = {
     weight *= n
+  }
+
+  // Performs L2 regularization scaling
+  def l1penalty(eta: Double, lambda: Double): Unit = {
+    val l1_g = weight.map(x => if(x >= 0) 1.0 else -1.0)
+    weight = eta * (weight - lambda * l1_g)
   }
 
   def predict_lr(X: Matrix[Double]): Seq[Double] = {

@@ -20,7 +20,7 @@ class BaseBGD(var eta: Double, //学习速率
               lambda: Double, // : Double, //正则化参数
               loss: LossFunction, //损失函数
               iterNum: Int = 1000, //迭代次数
-              penalty: String = "l2", // 暂时只实现L2正则化
+              penalty: String = "l2",
               verbose: Boolean = false,
               print_period: Int = 100 //打印周期
              ) extends Optimizer {
@@ -57,7 +57,8 @@ class BaseBGD(var eta: Double, //学习速率
 
           totalLoss += loss.loss(y_pred, y_format)
         }
-        if (penalty == "l2") scaleWeights(Math.max(0, 1 - eta * lambda))
+        if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))
+        else l1penalty(eta, lambda)
 
         weight += delta_w * (1.0 / x.rows) * eta
         intercept += delta_b * (1.0 / x.rows) * eta
@@ -100,7 +101,7 @@ class BaseSGD(var eta: Double, //学习速率
               lambda: Double, //正则化参数
               loss: LossFunction, //损失函数
               iterNum: Int = 1000, //迭代次数
-              penalty: String = "l2", // 暂时只实现L2正则化
+              penalty: String = "l2",
               verbose: Boolean = false,
               print_period: Int = 100 //打印周期
              ) extends Optimizer {
@@ -130,7 +131,8 @@ class BaseSGD(var eta: Double, //学习速率
           else dloss
 
           val update = -eta * dloss
-          if (penalty == "l2") scaleWeights(Math.max(0, 1 - eta * lambda))
+          if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))
+          else l1penalty(eta, lambda)
 
           weight += ele * update
           intercept += update
@@ -174,7 +176,7 @@ class BaseMSGD(var eta: Double, //学习速率
                lambda: Double, //正则化参数
                loss: LossFunction, //损失函数
                iterNum: Int = 1000, //迭代次数
-               penalty: String = "l2", // 暂时只实现L2正则化
+               penalty: String = "l2",
                batch: Int = 128, //一个batch样本数
                verbose: Boolean = false,
                print_period: Int = 100 //打印周期
@@ -225,7 +227,8 @@ class BaseMSGD(var eta: Double, //学习速率
 
           }
 
-          if (penalty == "l2") scaleWeights(Math.max(0, 1 - eta * lambda))
+          if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))
+          else l1penalty(eta, lambda)
 
           weight += delta_w * (1.0 / sub_x.rows) * eta
           intercept += delta_b * (1.0 / sub_x.rows) * eta
