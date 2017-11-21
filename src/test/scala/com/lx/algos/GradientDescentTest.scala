@@ -1,7 +1,8 @@
 package com.lx.algos
 
+import breeze.linalg.DenseVector
 import com.lx.algos.loss.LogLoss
-import com.lx.algos.optim.SGD
+import com.lx.algos.optim.{AdaGrad, SGD}
 import com.lx.algos.utils.MatrixTools
 import org.scalatest.FlatSpec
 
@@ -18,17 +19,28 @@ class GradientDescentTest extends FlatSpec {
 
   val loss = new LogLoss
 
+      {
+        val sgd = new SGD
+        sgd.set_verbose(true)
+          .set_printPeriod(1)
+          .set_eta(0.01)
+  //        .set_penalty("l1")
+        //      .set_nesterov(true)
+
+        sgd.fit(x, y.toArray.toSeq)
+        println(sgd.weight)
+      }
+
   {
-    val sgd = new SGD
-    sgd.set_verbose(true)
-      .set_printPeriod(1)
-      .set_eta(0.0001)
-      .set_penalty("l1")
+    val adagrad = new AdaGrad
+    adagrad.set_verbose(true)
+      .set_printPeriod(100)
+      .set_eta(0.01)
+    //      .set_penalty("l1")
     //      .set_nesterov(true)
 
-    sgd.fit(x, y.toArray.toSeq)
-
-    println(sgd.weight)
+    adagrad.fit(x, y.toArray.toSeq)
+    println(adagrad.weight)
   }
 
 }

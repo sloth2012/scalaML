@@ -31,7 +31,6 @@ class SGD extends Optimizer with Param {
       "penalty" -> "l2", //正则化系数，暂只实现l2
       "iterNum" -> 1000, //迭代轮数
       "loss" -> new LogLoss,
-      "lr_schedule" -> "constant", //eta（learning_rate）更新策略, 共有{constant， adagrad, adadelta, adam, rmsprop}
       "batchSize" -> 128 //minibatch size，一个batc多少样本
     ))
 
@@ -70,9 +69,6 @@ class SGD extends Optimizer with Param {
 
   def nesterov = getParam[Boolean]("nesterov")
 
-  def lr_schedule = getParam[String]("lr_schedule")
-
-
 
   def set_batchSize(batchSize: Int) = setParam[Int]("batchSize", batchSize)
 
@@ -94,8 +90,7 @@ class SGD extends Optimizer with Param {
 
   def set_nesterov(nesterov: Boolean) = setParam[Boolean]("nesterov", nesterov)
 
-  def set_lr_schedule(lr_schedule: String) = setParam[String]("lr_schedule", lr_schedule)
-
+  //TODO minibatch update
   def get_minibatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
 
     assert(X.rows == y.size)
@@ -152,7 +147,6 @@ class SGD extends Optimizer with Param {
             velocity = gamma * velocity + grad * eta
             weight += -velocity
           }
-
 
           intercept += -dloss * eta
 
