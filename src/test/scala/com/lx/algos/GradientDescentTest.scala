@@ -2,7 +2,7 @@ package com.lx.algos
 
 import breeze.linalg.DenseVector
 import com.lx.algos.loss.LogLoss
-import com.lx.algos.optim.{AdaDelta, AdaGrad, RMSProp, SGD}
+import com.lx.algos.optim._
 import com.lx.algos.utils.MatrixTools
 import org.scalatest.FlatSpec
 
@@ -51,14 +51,23 @@ class GradientDescentTest extends FlatSpec {
 //    println(rmsprop.weight)
 //  }
 
+//  {
+//    val adadelta = new AdaDelta
+//    adadelta.set_verbose(true)
+//      .set_printPeriod(1)
+//      .set_gamma(0.9)
+//      .fit(x, y.toArray.toSeq)
+//
+//    println(adadelta.weight)
+//  }
+
   {
-    val adadelta = new AdaDelta
-    adadelta.set_verbose(true)
+    val adam = new Adam
+    adam.set_verbose(true)
       .set_printPeriod(1)
       .set_gamma(0.9)
       .fit(x, y.toArray.toSeq)
 
-    println(adadelta.weight)
+    println(adam.weight)
   }
-
 }
