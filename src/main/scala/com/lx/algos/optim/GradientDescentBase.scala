@@ -28,8 +28,8 @@ class BaseBGD(var eta: Double, //学习速率
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
-    val x = X.toDenseMatrix
-    weight = DenseVector.zeros[Double](x.cols) //init_weight
+    weight_init(X.cols)
+    val x = input(X).toDenseMatrix
 
     breakable {
       var last_avg_loss = Double.MaxValue
@@ -42,7 +42,7 @@ class BaseBGD(var eta: Double, //学习速率
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(weight) + intercept
+          val y_pred: Double = ele.dot(_weight)
           val y_format = if (y(i) == 1.0) 1.0 else -1.0
 
           var dloss = loss.dLoss(y_pred, y_format)
@@ -57,11 +57,9 @@ class BaseBGD(var eta: Double, //学习速率
 
           totalLoss += loss.loss(y_pred, y_format)
         }
-        if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))
-        else l1penalty(eta, lambda)
 
-        weight += delta_w * (1.0 / x.rows) * eta
-        intercept += delta_b * (1.0 / x.rows) * eta
+        doPenalty(penalty, eta, lambda)
+        _weight += delta_w * (1.0 / x.rows) * eta
 
 
         val avg_loss = totalLoss / x.rows
@@ -109,8 +107,8 @@ class BaseSGD(var eta: Double, //学习速率
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
-    val x = X.toDenseMatrix
-    weight = DenseVector.rand[Double](x.cols) //init_weight
+    weight_init(X.cols)
+    val x = input(X).toDenseMatrix
 
     breakable {
       var last_avg_loss = Double.MaxValue
@@ -120,7 +118,7 @@ class BaseSGD(var eta: Double, //学习速率
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(weight) + intercept
+          val y_pred: Double = ele.dot(_weight)
 
           val y_format = if (y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
 
@@ -131,11 +129,9 @@ class BaseSGD(var eta: Double, //学习速率
           else dloss
 
           val update = -eta * dloss
-          if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))
-          else l1penalty(eta, lambda)
+          doPenalty(penalty, eta, lambda)
 
-          weight += ele * update
-          intercept += update
+          _weight += ele * update
 
           totalLoss += loss.loss(y_pred, y_format)
         }
@@ -195,8 +191,8 @@ class BaseMSGD(var eta: Double, //学习速率
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
-    val x = X.toDenseMatrix
-    weight = DenseVector.rand[Double](x.cols) //init_weight
+    weight_init(X.cols)
+    val x = input(X).toDenseMatrix
 
     breakable {
       var last_avg_loss = Double.MaxValue
@@ -210,7 +206,7 @@ class BaseMSGD(var eta: Double, //学习速率
           var delta_b: Double = 0.0
           for (i <- 0 until sub_x.rows) {
             val ele = sub_x(i, ::).t
-            val y_pred: Double = ele.dot(weight) + intercept
+            val y_pred: Double = ele.dot(_weight)
 
             val y_format = if (sub_y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
 
@@ -227,11 +223,9 @@ class BaseMSGD(var eta: Double, //学习速率
             totalLoss += loss.loss(y_pred, y_format)
           }
 
-          if (penalty == "l2") l2penalty(Math.max(0, 1 - eta * lambda))
-          else l1penalty(eta, lambda)
+          doPenalty(penalty, eta, lambda)
 
-          weight += delta_w * (1.0 / sub_x.rows) * eta
-          intercept += delta_b * (1.0 / sub_x.rows) * eta
+          _weight += delta_w * (1.0 / sub_x.rows) * eta
         }
 
         val avg_loss = totalLoss / x.rows

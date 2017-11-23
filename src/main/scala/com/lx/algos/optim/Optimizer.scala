@@ -1,6 +1,6 @@
 package com.lx.algos.optim
 
-import breeze.linalg.{DenseVector, Matrix, norm}
+import breeze.linalg.{DenseMatrix, DenseVector, Matrix, norm}
 
 /**
   *
@@ -9,12 +9,12 @@ import breeze.linalg.{DenseVector, Matrix, norm}
   */
 
 
-trait Optimizer {
+trait Optimizer extends WeightVector{
+
+  //迭代终止条件
   var MIN_LOSS: Double = 1e-9
 
-
-  var weight: DenseVector[Double] = null
-  var intercept: Double = 0
+  def input(X: Matrix[Double]): Matrix[Double] = DenseMatrix.horzcat(DenseMatrix.ones[Double](X.rows, 1), X.toDenseMatrix)
 
   def fit(X: Matrix[Double], y: Seq[Double]): Optimizer
 
@@ -22,17 +22,7 @@ trait Optimizer {
 
   def predict_proba(X: Matrix[Double]): Seq[Double]
 
-  // Performs L2 regularization scaling
-  def l2penalty(n: Double): Unit = {
-    weight *= n
-  }
-
-  // Performs L2 regularization scaling
-  def l1penalty(eta: Double, lambda: Double): Unit = {
-    val l1_g = weight.map(x => if(x >= 0) 1.0 else -1.0)
-    weight = eta * (weight - lambda * l1_g)
-  }
-
+  //现在为二分类
   def predict_lr(X: Matrix[Double]): Seq[Double] = {
     assert(weight != null)
     (X * weight + intercept).toArray.map {

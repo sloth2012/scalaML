@@ -40,8 +40,8 @@ class Adam extends AdaGrad {
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
-    val x = X.toDenseMatrix
-    weight = DenseVector.rand[Double](x.cols) //init_weight
+    weight_init(X.cols)
+    val x = input(X).toDenseMatrix
 
     breakable {
       var last_avg_loss = Double.MaxValue
@@ -56,7 +56,7 @@ class Adam extends AdaGrad {
         for (i <- 0 until x.rows) {
           t += 1
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(weight) + intercept
+          val y_pred: Double = ele.dot(_weight)
 
           val y_format = if (y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
 
@@ -66,12 +66,6 @@ class Adam extends AdaGrad {
           else if (dloss > MAX_DLOSS) MAX_DLOSS
           else dloss
 
-          if (penalty == "l2") {
-            l2penalty(Math.max(0, 1 - eta * lambda))
-          } else {
-            l1penalty(eta, lambda)
-          }
-
           val grad = dloss * ele
 
           cache_moment1 = beta1 * cache_moment1 + (1 - beta1) * grad
@@ -80,8 +74,10 @@ class Adam extends AdaGrad {
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
           val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
 
-          weight += -eta * bias_moment1 / sqrt(bias_moment2 + eps)
-          //          intercept += -eta * dloss
+          val lr_grad =
+
+//          doPenalty(penalty, lr_grad, lambda)
+          _weight += -eta * bias_moment1 / sqrt(bias_moment2 + eps)
 
           totalLoss += loss.loss(y_pred, y_format)
         }

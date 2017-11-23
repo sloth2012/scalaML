@@ -35,8 +35,8 @@ class RMSProp extends AdaGrad {
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
-    val x = X.toDenseMatrix
-    weight = DenseVector.rand[Double](x.cols) //init_weight
+    weight_init(X.cols)
+    val x = input(X).toDenseMatrix
 
     breakable {
       var last_avg_loss = Double.MaxValue
@@ -47,7 +47,7 @@ class RMSProp extends AdaGrad {
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(weight) + intercept
+          val y_pred: Double = ele.dot(_weight)
 
           val y_format = if (y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
 
@@ -57,19 +57,13 @@ class RMSProp extends AdaGrad {
           else if (dloss > MAX_DLOSS) MAX_DLOSS
           else dloss
 
-          if (penalty == "l2") {
-            l2penalty(Math.max(0, 1 - eta * lambda))
-          } else{
-            l1penalty(eta, lambda)
-          }
-
           val grad = dloss * ele
 
           cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
 
-          weight += -lr_grad *:* grad
-//          intercept += -eta * dloss
+          doPenalty(penalty, lr_grad, lambda)
+          _weight += -lr_grad *:* grad
 
           totalLoss += loss.loss(y_pred, y_format)
         }
