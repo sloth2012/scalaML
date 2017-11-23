@@ -12,7 +12,7 @@ import breeze.linalg.{DenseMatrix, DenseVector, Matrix, norm}
 trait Optimizer extends WeightVector{
 
   //迭代终止条件
-  var MIN_LOSS: Double = 1e-9
+  var MIN_LOSS: Double = 1e-5
 
   def input(X: Matrix[Double]): Matrix[Double] = DenseMatrix.horzcat(DenseMatrix.ones[Double](X.rows, 1), X.toDenseMatrix)
 

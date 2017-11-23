@@ -74,9 +74,7 @@ class Adam extends AdaGrad {
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
           val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
 
-          val lr_grad =
-
-//          doPenalty(penalty, lr_grad, lambda)
+          doPenalty(penalty, eta, lambda)
           _weight += -eta * bias_moment1 / sqrt(bias_moment2 + eps)
 
           totalLoss += loss.loss(y_pred, y_format)
