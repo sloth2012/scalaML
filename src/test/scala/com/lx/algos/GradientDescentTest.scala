@@ -25,7 +25,7 @@ class GradientDescentTest extends FlatSpec {
     sgd.set_verbose(true)
       .set_printPeriod(1)
       .set_eta(0.01)
-            .set_penalty("l1")
+//            .set_penalty("l1")
           .set_nesterov(true)
 
     sgd.fit(x, y.toArray.toSeq)
@@ -36,7 +36,7 @@ class GradientDescentTest extends FlatSpec {
     val adagrad = new AdaGrad
     println(s"this is ${adagrad.getClass.getSimpleName} running!")
     adagrad.set_verbose(true)
-      .set_printPeriod(1)
+      .set_printPeriod(10)
       .set_eta(0.01)
 //      .set_penalty("l2")
 
