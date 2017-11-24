@@ -1,6 +1,7 @@
 package com.lx.algos.optim
 
 import breeze.linalg.{DenseMatrix, DenseVector, Matrix, norm}
+import com.lx.algos.loss.{LogLoss, LossFunction}
 
 /**
   *
@@ -40,5 +41,13 @@ trait Optimizer extends WeightVector{
 
   protected def log_print(epoch: Int, acc: Double, avg_loss: Double): Unit = {
     println(s"iteration $epoch: norm:${norm(weight)}, bias:$intercept, avg_loss:$avg_loss, acc:${acc.formatted("%.6f")}")
+  }
+
+  //不同损失函数接受的输入格式不太一样，因此这里需要对默认的分类标签进行转换
+  protected def format_y(y: Double, loss: LossFunction): Double = {
+    loss match {
+      case _: LogLoss => if (y == 1.0) 1.0 else -1.0  //需要注意，logloss损失函数的输入标签为-1和1
+      case _ => y
+    }
   }
 }

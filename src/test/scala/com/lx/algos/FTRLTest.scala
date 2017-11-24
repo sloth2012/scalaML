@@ -21,7 +21,7 @@ class FTRLTest extends FlatSpec {
     val model = new FTRL_Proximal(x.cols)
     println(s"this is ${model.getClass.getSimpleName} running!")
     model.set_verbose(true)
-      .set_printPeriod(1)
+      .set_printPeriod(100)
       .set_loss(loss)
       .fit(x, y.toArray.toSeq)
 

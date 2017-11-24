@@ -19,7 +19,7 @@ import scala.reflect.ClassTag
   */
 
 
-//非处理离散类型，如离散类型，需参照kaggle FTRL进行优化
+//非处理离散类型，如离散类型，需参照kaggle FTRL进行优化，未实现交叉版本的特征
 class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
 
   override def setParam[T: ClassTag](name: String, value: T) = {
@@ -49,7 +49,6 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
 
   var D = feature_size + 1 // number of weights to use
 
-  var interaction = false
   //squared sum of past gradients
   var N: DenseVector[Double] = DenseVector.zeros[Double](D)
   //adaptive lr
@@ -139,8 +138,7 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
         for (i <- 0 until X.rows) {
           val ele = x(i, ::).t
           val y_pred: Double = _predict(ele)
-          val y_format = if (y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
-
+          val y_format = format_y(y(i), loss)
           update(ele, y_pred, y_format)
           totalLoss += loss.loss(y_pred, y_format)
         }

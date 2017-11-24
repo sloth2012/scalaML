@@ -120,7 +120,7 @@ class SGD extends Optimizer with Param {
           val ele = x(i, ::).t
           val y_pred: Double = ele.dot(_weight)
 
-          val y_format = if (y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
+          val y_format = format_y(y(i), loss)
 
           var dloss = loss.dLoss(y_pred, y_format)
 

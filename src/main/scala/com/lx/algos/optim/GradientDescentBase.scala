@@ -43,7 +43,7 @@ class BaseBGD(var eta: Double, //学习速率
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
           val y_pred: Double = ele.dot(_weight)
-          val y_format = if (y(i) == 1.0) 1.0 else -1.0
+          val y_format = format_y(y(i), loss)
 
           var dloss = loss.dLoss(y_pred, y_format)
 
@@ -120,7 +120,7 @@ class BaseSGD(var eta: Double, //学习速率
           val ele = x(i, ::).t
           val y_pred: Double = ele.dot(_weight)
 
-          val y_format = if (y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
+          val y_format = format_y(y(i), loss)
 
           var dloss = loss.dLoss(y_pred, y_format)
 
@@ -208,7 +208,7 @@ class BaseMSGD(var eta: Double, //学习速率
             val ele = sub_x(i, ::).t
             val y_pred: Double = ele.dot(_weight)
 
-            val y_format = if (sub_y(i) == 1.0) 1.0 else -1.0 //需要注意，分类损失函数的格式化为-1和1
+            val y_format = format_y(y(i), loss)
 
             var dloss = loss.dLoss(y_pred, y_format)
 
