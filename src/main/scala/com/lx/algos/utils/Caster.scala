@@ -12,7 +12,7 @@ object Caster {
   def as[T: ClassTag](x: Any): T = {
     opt[T](x) match {
       case Some(e) => e
-      case None => throw new Exception(s"Data cast failed: item: ${x}, ${x.getClass.getName} => ${implicitly[ClassTag[T]].runtimeClass.getName}")
+      case None => throw new Exception(s"Data cast failed: item: ${x} => ${implicitly[ClassTag[T]].runtimeClass.getName}")
     }
   }
 
