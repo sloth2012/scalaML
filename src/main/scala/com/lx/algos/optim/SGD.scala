@@ -1,7 +1,6 @@
 package com.lx.algos.optim
 
 import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
-import breeze.optimize.BatchSize
 import com.lx.algos.MAX_DLOSS
 import com.lx.algos.loss.{LogLoss, LossFunction}
 import com.lx.algos.metrics.ClassificationMetrics

@@ -1,16 +1,13 @@
 package com.lx.algos.optim
 
-import breeze.linalg.{DenseVector, Matrix, SparseVector}
+import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
-import breeze.util.Sorting
-import com.lx.algos.MAX_DLOSS
-import com.lx.algos.loss.{LogLoss, LossFunction}
+import com.lx.algos.loss.LossFunction
 import com.lx.algos.metrics.ClassificationMetrics
 import com.lx.algos.utils.Param
 
-import scala.util.control.Breaks.{break, breakable}
-import scala.collection.mutable.Map
 import scala.reflect.ClassTag
+import scala.util.control.Breaks.breakable
 
 /**
   *

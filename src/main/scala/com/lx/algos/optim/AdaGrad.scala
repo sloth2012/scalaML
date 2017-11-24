@@ -1,6 +1,6 @@
 package com.lx.algos.optim
 
-import breeze.linalg.{DenseMatrix, DenseVector, Matrix, sum}
+import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.MAX_DLOSS
 import com.lx.algos.loss.{LogLoss, LossFunction}

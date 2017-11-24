@@ -3,10 +3,8 @@ package com.lx.algos.optim
 import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.MAX_DLOSS
-import com.lx.algos.loss.LogLoss
 import com.lx.algos.metrics.ClassificationMetrics
 
-import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}
 
 /**

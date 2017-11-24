@@ -1,13 +1,12 @@
 package com.lx.algos
+import breeze.linalg.{DenseMatrix, DenseVector}
+
+import scala.io.Source
 /**
   *
   * @project scalaML
   * @author lx on 5:57 PM 16/11/2017
   */
-
-import breeze.linalg.{DenseMatrix, DenseVector}
-
-import scala.io.Source
 
 object DataHandler {
 

@@ -5,13 +5,10 @@ package com.lx.algos.utils
   * @author lx on 5:37 PM 16/11/2017
   */
 
-import breeze.linalg.{*, DenseMatrix, sum}
-
-import scala.util.Random.{shuffle => sys_shuffle}
-import breeze.storage.Zero
-import spire.implicits.{cforRange, cforRange2}
+import breeze.linalg.DenseMatrix
 
 import scala.reflect.ClassTag
+import scala.util.Random.{shuffle => sys_shuffle}
 
 object MatrixTools {
 

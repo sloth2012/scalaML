@@ -1,15 +1,17 @@
 package com.lx.algos
+
+import com.lx.algos.loss.LogLoss
+import com.lx.algos.metrics.ClassificationMetrics
+import com.lx.algos.optim.BaseMSGD
+import com.lx.algos.utils.MatrixTools
+import org.scalatest.FlatSpec
+
 /**
   *
   * @project scalaML
   * @author lx on 6:21 PM 16/11/2017
   */
 
-import com.lx.algos.loss.LogLoss
-import com.lx.algos.metrics.ClassificationMetrics
-import com.lx.algos.optim.{BaseBGD, BaseMSGD, BaseSGD}
-import com.lx.algos.utils.MatrixTools
-import org.scalatest.FlatSpec
 
 class BaseGradientDescentTest extends FlatSpec {
 

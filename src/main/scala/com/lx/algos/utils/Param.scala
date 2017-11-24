@@ -2,6 +2,7 @@ package com.lx.algos.utils
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+import scala.collection.immutable
 
 /**
   *
@@ -9,8 +10,6 @@ import scala.reflect.ClassTag
   * @author lx on 11:16 AM 19/11/2017
   */
 
-
-import scala.collection.immutable
 
 class Default[+A](val default: A)
 
