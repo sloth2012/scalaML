@@ -18,23 +18,19 @@ trait LossFunction {
 
   def loss(p: Double, y: Double): Double = 0
 
-  def loss(p: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = LossFunc(p, y)
+  //均为n*1的shape
+  def loss(p: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = {
+    assert(p.rows == y.rows && p.cols == y.cols)
+
+    DenseMatrix.zipMap_d.map(p, y, loss)
+  }
 
   //求导
   def dLoss(p: Double, y: Double): Double = 0
 
-  def dLoss(p: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = DlossFunc(p, y)
+  def dLoss(p: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = {
+    assert(p.rows == y.rows && p.cols == y.cols)
 
-  //用于矩阵批量计算
-  private object LossFunc extends UFunc with MappingUFunc{
-    implicit object lossImpl2 extends Impl2[Double, Double, Double] {
-      override def apply(v1: Double, v2: Double): Double = loss(v1, v2)
-    }
-  }
-
-  private object DlossFunc extends UFunc with MappingUFunc{
-    implicit object dlossImpl2 extends Impl2[Double, Double, Double] {
-      override def apply(v1: Double, v2: Double): Double = loss(v1, v2)
-    }
+    DenseMatrix.zipMap_d.map(p, y, dLoss)
   }
 }

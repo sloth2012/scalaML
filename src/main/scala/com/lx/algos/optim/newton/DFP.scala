@@ -20,9 +20,9 @@ import scala.util.control.Breaks.{break, breakable}
   */
 class DFP extends Optimizer with Param {
 
-  val iterNum = 1000
+  val iterNum = 5000
   val verbose = true
-  val printPeriod = 2000
+  val printPeriod = 1
   val loss = new LogLoss
 
 
@@ -72,7 +72,7 @@ class DFP extends Optimizer with Param {
         var a, b = 0.0
         breakable {
           while (Loop > 0) {
-            println(s"find [a,b]=[$a, $b] loop is $Loop")
+//            println(s"find [a,b] loop is $Loop")
             Loop += 1
 
             if (f1 > f2) h *= 2
@@ -92,7 +92,7 @@ class DFP extends Optimizer with Param {
             val theta3 = theta + alpha3 * Dk
             val f3 = sum(loss.loss(x * theta3, y)) / x.rows
 
-            println(s"f3 - f2 is ${f3 - f2}")
+//            println(s"f3 - f2 is ${f3 - f2}")
 
             if (f3 > f2) {
               a = Math.min(alpha1, alpha3)
@@ -131,7 +131,7 @@ class DFP extends Optimizer with Param {
           }
         }
 
-        println(s"optimal alpha is $alpha")
+//        println(s"optimal alpha is $alpha")
 
         val theta_old = theta
         theta = theta + alpha * Dk
@@ -140,7 +140,7 @@ class DFP extends Optimizer with Param {
         //update the Hessian matrix
         H = x * theta
         J = sum(loss.loss(H, y)) / x.rows
-        println(s"Itering $epoch; cost is: $J")
+//        println(s"Itering $epoch; cost is: $J")
         costJ :+= J
 
         //here to estimate Hessian'inv
@@ -153,18 +153,21 @@ class DFP extends Optimizer with Param {
         val yk = grad - grad_old reshape(x.cols, 1)
 
 
+//        println(s"theta:$theta")
+
         //z1 = (sk' * yk) # a value
-        val z1 = sk.t * yk
+        val z1 = (sk.t * yk).data(0)
         //修正正定
-        if (z1(0, 0) > 0) {
+        if (z1 > 0 || true) {
 
           //z2 = (sk * sk') # a matrix
           val z2 = sk * sk.t
 
-          //z4 = (H * yk * yk' * H) # a matrix
           //z3 = (yk' * H * yk) # a value
-          val z3 = yk.t * Hessian * yk
-          val z4 = Hessian * yk * yk.t * yk
+          //z4 = (H * yk * yk' * H) # a matrix
+          val z3 = (yk.t * Hessian * yk).data(0)
+
+          val z4 = Hessian * yk * yk.t * Hessian
 
           val DHessian = z2 / z1 - z4 / z3
           Hessian += DHessian
