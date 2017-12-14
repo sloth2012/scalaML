@@ -1,27 +1,28 @@
-package com.lx.algos.optim
+package com.lx.algos.optim.GradientDescent
 
 import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.MAX_DLOSS
 import com.lx.algos.metrics.ClassificationMetrics
+import com.lx.algos.optim.Optimizer
 
 import scala.util.control.Breaks.{break, breakable}
 
 /**
   *
   * @project scalaML
-  * @author lx on 5:00 PM 21/11/2017
+  * @author lx on 10:05 PM 21/11/2017
   */
 
-class RMSProp extends AdaGrad {
-
-  override protected def init_param(): RMSProp = {
+class Adam extends AdaGrad {
+  override protected def init_param(): Adam = {
 
     super.init_param()
 
     setParams(Seq(
-      "gamma" -> 0.9, //梯度累加信息的衰减指数
-      "eta" -> 0.001 //Hiton建议的设置
+      "eta" -> 0.002, //梯度累加信息的衰减指数
+      "beta1" -> 0.9,
+      "beta2" -> 0.99
     ))
 
     this
@@ -29,6 +30,13 @@ class RMSProp extends AdaGrad {
 
   init_param()
 
+  def beta1 = getParam[Double]("beta1")
+
+  def set_beta1(beta1: Double) = setParam[Double]("beta1", beta1)
+
+  def beta2 = getParam[Double]("beta2")
+
+  def set_beta2(beta1: Double) = setParam[Double]("beta2", beta2)
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
@@ -38,12 +46,16 @@ class RMSProp extends AdaGrad {
 
     breakable {
       var last_avg_loss = Double.MaxValue
-      var cache_grad = DenseVector.zeros[Double](x.cols)
+      var cache_moment1 = DenseVector.zeros[Double](x.cols)
+      var cache_moment2 = DenseVector.zeros[Double](x.cols)
+
+      var t = 0
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
 
         for (i <- 0 until x.rows) {
+          t += 1
           val ele = x(i, ::).t
           val y_pred: Double = ele.dot(_weight)
 
@@ -57,11 +69,14 @@ class RMSProp extends AdaGrad {
 
           val grad = dloss * ele
 
-          cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
-          val lr_grad = eta / sqrt(cache_grad + eps)
+          cache_moment1 = beta1 * cache_moment1 + (1 - beta1) * grad
+          cache_moment2 = beta2 * cache_moment2 + (1 - beta2) * grad *:* grad
 
-          doPenalty(penalty, lr_grad, lambda)
-          _weight += -lr_grad *:* grad
+          val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
+          val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
+
+          doPenalty(penalty, eta, lambda)
+          _weight += -eta * bias_moment1 / sqrt(bias_moment2 + eps)
 
           totalLoss += loss.loss(y_pred, y_format)
         }

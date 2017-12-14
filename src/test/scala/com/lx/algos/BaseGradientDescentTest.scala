@@ -2,7 +2,7 @@ package com.lx.algos
 
 import com.lx.algos.loss.LogLoss
 import com.lx.algos.metrics.ClassificationMetrics
-import com.lx.algos.optim.BaseMSGD
+import com.lx.algos.optim.GradientDescent.BaseMSGD
 import com.lx.algos.utils.MatrixTools
 import org.scalatest.FlatSpec
 

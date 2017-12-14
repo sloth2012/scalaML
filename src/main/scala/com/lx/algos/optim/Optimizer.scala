@@ -1,7 +1,9 @@
 package com.lx.algos.optim
 
+import breeze.generic.{MappingUFunc, UFunc}
 import breeze.linalg.{DenseMatrix, Matrix, norm}
 import com.lx.algos.loss.{LogLoss, LossFunction}
+import com.lx.algos.utils.WeightVector
 
 /**
   *
@@ -49,5 +51,15 @@ trait Optimizer extends WeightVector{
       case _: LogLoss => if (y == 1.0) 1.0 else -1.0  //需要注意，logloss损失函数的输入标签为-1和1
       case _ => y
     }
+  }
+
+  protected def format_y(y: DenseMatrix[Double], loss: LossFunction): DenseMatrix[Double] = {
+    object formatFunc extends UFunc with MappingUFunc{
+      implicit object formatImpl2 extends Impl[Double, Double] {
+        override def apply(v: Double): Double = format_y(v, loss)
+      }
+    }
+
+    formatFunc(y)
   }
 }

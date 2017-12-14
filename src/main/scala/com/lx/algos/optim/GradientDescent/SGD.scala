@@ -1,9 +1,10 @@
-package com.lx.algos.optim
+package com.lx.algos.optim.GradientDescent
 
 import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import com.lx.algos.MAX_DLOSS
 import com.lx.algos.loss.{LogLoss, LossFunction}
 import com.lx.algos.metrics.ClassificationMetrics
+import com.lx.algos.optim.Optimizer
 import com.lx.algos.utils.{MatrixTools, Param}
 
 import scala.reflect.ClassTag
@@ -24,7 +25,7 @@ class SGD extends Optimizer with Param {
       "eta" -> 0.01, //learning_rate
       "lambda" -> 0.15, // 正则化权重,weigjht decay
       "gamma" -> 0.9, //动量参数
-      "nesterov" -> false, // NAG支持，改良版，需要配合gamma参数
+      "nesterov" -> false, // NAG支持，改良版，需要配合gamma参数,该部分实现应用了armijo准则
       "verbose" -> false, //打印日志
       "printPeriod" -> 100,
       "penalty" -> "l2", //正则化系数，暂只实现l2
@@ -36,7 +37,6 @@ class SGD extends Optimizer with Param {
     this
   }
 
-  init_param()
 
   override def setParam[T: ClassTag](name: String, value: T) = {
     super.setParam[T](name, value)
@@ -47,6 +47,8 @@ class SGD extends Optimizer with Param {
     super.setParams[T](params)
     this
   }
+
+  init_param()
 
   def batchSize = getParam[Int]("batchSize")
 

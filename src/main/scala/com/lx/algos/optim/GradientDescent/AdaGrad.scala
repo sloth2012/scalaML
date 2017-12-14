@@ -1,10 +1,11 @@
-package com.lx.algos.optim
+package com.lx.algos.optim.GradientDescent
 
 import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.MAX_DLOSS
 import com.lx.algos.loss.{LogLoss, LossFunction}
 import com.lx.algos.metrics.ClassificationMetrics
+import com.lx.algos.optim.Optimizer
 import com.lx.algos.utils.{MatrixTools, Param}
 
 import scala.reflect.ClassTag
@@ -35,7 +36,6 @@ class AdaGrad extends Optimizer with Param {
     this
   }
 
-  init_param()
 
   override def setParam[T: ClassTag](name: String, value: T) = {
     super.setParam[T](name, value)
@@ -46,6 +46,9 @@ class AdaGrad extends Optimizer with Param {
     super.setParams[T](params)
     this
   }
+
+  init_param()
+
 
   lazy val eps = 1e-8
 

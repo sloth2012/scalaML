@@ -1,9 +1,10 @@
-package com.lx.algos.optim
+package com.lx.algos.optim.GradientDescent
 
 import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.loss.LossFunction
 import com.lx.algos.metrics.ClassificationMetrics
+import com.lx.algos.optim.Optimizer
 import com.lx.algos.utils.Param
 
 import scala.reflect.ClassTag

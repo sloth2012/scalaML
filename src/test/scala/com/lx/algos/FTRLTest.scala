@@ -1,7 +1,7 @@
 package com.lx.algos
 
 import com.lx.algos.loss.LogLoss
-import com.lx.algos.optim.FTRL_Proximal
+import com.lx.algos.optim.GradientDescent.FTRL_Proximal
 import com.lx.algos.utils.MatrixTools
 import org.scalatest.FlatSpec
 
