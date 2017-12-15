@@ -2,6 +2,7 @@ package com.lx.algos.loss
 
 import breeze.generic.{MappingUFunc, UFunc}
 import breeze.linalg.DenseMatrix
+import com.lx.algos.utils.BaseGradFunction
 
 /**
   *
@@ -12,9 +13,12 @@ import breeze.linalg.DenseMatrix
 
 
 
-trait LossFunction {
+trait LossFunction extends BaseGradFunction{
 
+  //目前在gradient descent上还未使用
+  override def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double] = x
 
+  override def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]) =  x * theta
 
   def loss(p: Double, y: Double): Double = 0
 

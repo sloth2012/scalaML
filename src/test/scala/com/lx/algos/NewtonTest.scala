@@ -17,17 +17,13 @@ class NewtonTest  extends FlatSpec{
   val (x, y) = DataHandler.binary_cls_data()
   val (new_x, new_y) = MatrixTools.shuffle(x, y.toArray.toSeq)
 
-  val dfp = new DFP
-  dfp.fit(new_x, new_y)
+  val model = new DFP
+  model.set_penalty("l2")
+      .set_verbose(true)
+      .set_lambda(0.1)
+      .fit(new_x, new_y)
 
-
-//  val a = DenseMatrix.create(1,4, Array(1.0,2,3,4))
-//
-//  val b = DenseMatrix.create(1,4, Array(4,2.0,3,43))
-//
-//  val f = (aa: Double, bb: Double) => aa - bb
-//
-//  println(DenseMatrix.zipMap_d.map(a,b,f))
+  println(model.weight)
 
 
 }

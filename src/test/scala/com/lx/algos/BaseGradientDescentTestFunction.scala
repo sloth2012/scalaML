@@ -13,7 +13,7 @@ import org.scalatest.FlatSpec
   */
 
 
-class BaseGradientDescentTest extends FlatSpec {
+class BaseGradientDescentTestFunction extends FlatSpec {
 
   val (x, y) = DataHandler.binary_cls_data()
   val loss = new LogLoss

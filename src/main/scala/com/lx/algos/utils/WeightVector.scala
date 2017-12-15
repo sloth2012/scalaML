@@ -1,6 +1,7 @@
 package com.lx.algos.utils
 
 import breeze.linalg.DenseVector
+import Math.signum
 
 /**
   *
@@ -9,6 +10,8 @@ import breeze.linalg.DenseVector
   */
 
 class WeightVector {
+
+  private val MIN_LR_EPS = 1e-6
 
   protected var _weight: DenseVector[Double] = null
 
@@ -28,7 +31,7 @@ class WeightVector {
 
   // Performs L2 regularization scaling
   def l2penalty(lr: Double, lambda: Double): Unit = {
-    _weight *= (1 - Math.max(0, lambda * lr))
+    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
   }
 
   def l2penalty(lr: DenseVector[Double], lambda: Double): Unit = {
@@ -37,20 +40,14 @@ class WeightVector {
 
   // Performs L1 regularization scaling
   def l1penalty(lr: Double, lambda: Double): Unit = {
-    val l1_g = _weight.map{
-      x => if(x > 0) 1.0
-      else if(x < 0) -1.0
-      else 0
+    if (lr >= MIN_LR_EPS) {
+      val l1_g = _weight.map(signum)
+      _weight -= lr * lambda * l1_g
     }
-    _weight -= lr * lambda * l1_g
   }
 
   def l1penalty(lr: DenseVector[Double], lambda: Double): Unit = {
-    val l1_g = _weight.map{
-      x => if(x > 0) 1.0
-      else if(x < 0) -1.0
-      else 0
-    }
+    val l1_g = _weight.map(signum)
     _weight -=  lambda * l1_g *:* lr
   }
 
@@ -67,7 +64,7 @@ class WeightVector {
     penalty match {
       case "l2" => l2penalty(lr, lambda)
       case "l1" => l1penalty(lr, lambda)
-      case _ =>   //donothing
+      case _ =>   //do nothing
     }
   }
 }
