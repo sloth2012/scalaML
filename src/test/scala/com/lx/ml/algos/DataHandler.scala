@@ -13,7 +13,7 @@ object DataHandler {
 
   def binary_cls_data() = {
 
-    val root = getClass.getResource("/data").getPath
+    val root = getClass.getResource("/data/ml/binary_classify").getPath
     val f_path = root + "/binary_cls.X"
     val y_path = root + "/binary_cls.y"
 
