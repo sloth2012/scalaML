@@ -14,8 +14,8 @@ object DataHandler {
   def binary_cls_data() = {
 
     val root = getClass.getResource("/data/ml/binary_classify").getPath
-    val f_path = root + "/binary_cls.X"
-    val y_path = root + "/binary_cls.y"
+    val f_path = root + "/binary_cls_features"
+    val y_path = root + "/binary_cls_label"
 
     //    println(root)
     val features = Source.fromFile(f_path).getLines map {
