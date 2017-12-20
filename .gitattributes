@@ -1,1 +1,1 @@
-*.rb linguist-language=Scala
+*.scala linguist-language=Scala
