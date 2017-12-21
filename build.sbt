@@ -1,8 +1,17 @@
+
+enablePlugins(PackPlugin)
+
 name := "scalaML"
 
 version := "0.1"
 
 scalaVersion := "2.11.7"
+
+crossScalaVersions := Seq("2.11.2", "2.10.3")
+
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+
+javacOptions ++= Seq("-Xlint:unchecked")
 
 libraryDependencies  ++= Seq(
   // Last stable release
@@ -20,8 +29,9 @@ libraryDependencies  ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
 
 //   https://mvnrepository.com/artifact/joda-time/joda-time
-  "joda-time" % "joda-time" % "2.9.9"
+  "joda-time" % "joda-time" % "2.9.9",
 
+  "edu.cmu.ml.rtw" %% "matt-util" % "2.3.2"
 )
 
 

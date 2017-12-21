@@ -2,6 +2,8 @@ package com.lx.algos.nlp.nagao
 
 import java.io.FileWriter
 
+import com.mattg.util.FileUtil
+
 import scala.collection.mutable._
 import scala.io.Source
 import scala.util.{Failure, Sorting, Success, Try}
@@ -14,7 +16,7 @@ import scala.util.control.Breaks.{break, breakable}
   */
 
 
-class Nagao(var N: Int = 5) {
+class Nagao(var N: Int = 5, fileUtil: FileUtil = new FileUtil) {
 
   private var leftPTable: Array[String] = Array.empty[String]
   private var rightPTable: Array[String] = Array.empty[String]
@@ -167,16 +169,14 @@ class Nagao(var N: Int = 5) {
 
   //save TF, (left and right) neighbor number, neighbor entropy, mutual information
   private def saveTFNeighborInfoMI(outfile: String, stopwordfile: String, threshold: Seq[String]): Unit = {
-    //    Try{
     val stopWords = HashSet.empty[String]
 
-    Source.fromFile(stopwordfile).getLines.foreach {
+    fileUtil.readLinesFromFile(stopwordfile).foreach {
       line => if (line.length > 1) stopWords.add(line)
     }
 
-    val writer = new FileWriter(outfile)
+    val writer = fileUtil.getFileWriter(outfile)
 
-//    println(wordTFNeighbor.keys)
     wordTFNeighbor.foreach {
       case (key, value) => {
         breakable {
@@ -193,21 +193,16 @@ class Nagao(var N: Int = 5) {
             mi > threshold(3).toInt
           ) {
 
-
             val result = Seq(key, tf, leftNeighborNumber, rightNeighborNumber,
               value.getLeftNeighborEntropy, value.getRightNeighborEntropy, mi).mkString(",")
 
-            println(s"result:$result")
-            writer.write(result+"\n")
+//            println(result)
+            writer.write(result + "\n")
           }
         }
       }
     }
     writer.close()
-    //    } match {
-    //      case Success(_) => ()
-    //      case Failure(e)  => throw new RuntimeException(e.getMessage)
-    //    }
     println("Info: [Nagao Algorithm Step 4]: having saved to file")
 
   }
@@ -222,20 +217,16 @@ object Nagao {
                   outfile: String,
                   stopwordfile: String,
                   n: Int = 3,
-                  threshold_str: String = "5,3,3,3"
+                  threshold_str: String = "5,3,3,3",
+                  fileUtil: FileUtil = new FileUtil
                 ): Unit = {
     val nagao = new Nagao(n)
 
     inputs.par.foreach {
       case inputfile =>
-//        Try {
-        Source.fromFile(inputfile).getLines.foreach {
+        fileUtil.readLinesFromFile(inputfile).foreach {
           line => nagao.addToPTable(line)
         }
-//      } match {
-//        case Success(_) => ()
-//        case Failure(e) => throw new RuntimeException(e.getMessage)
-//      }
     }
     println("Info: [Nagao Algorithm Step 1]: having added all left and right substrings to PTable")
 
@@ -245,12 +236,5 @@ object Nagao {
     nagao.countTFNeighbor()
     //step4: save TF NeighborInfo and MI
     nagao.saveTFNeighborInfoMI(outfile, stopwordfile, threshold_str.split(","))
-  }
-
-
-  def main(args: Array[String]): Unit = {
-    val ins = Array("/Users/lx/Documents/projects_related/知识推理/code/workspace/tmp.txt")
-    applyNagao(ins, "/Users/lx/Downloads/test1.txt", "/Users/lx/Documents/projects_related/知识推理/code/workspace/data/stop_words.utf8")
-
   }
 }
