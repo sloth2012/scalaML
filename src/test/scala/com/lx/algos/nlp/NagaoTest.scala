@@ -24,7 +24,7 @@ class NagaoTest extends FlatSpec{
   val outFile = getClass.getResource("/data/nlp/nagao/").getPath + "result.txt"
   val stopwordFile = getClass.getResource("/data/nlp/nagao/stop_words.utf8").getPath
 
-  println(outFile)
+//  println(outFile)
 
-//  Nagao.applyNagao(inputFiles, outFile, stopwordFile)
+  Nagao.applyNagao(inputFiles, outFile, stopwordFile)
 }
