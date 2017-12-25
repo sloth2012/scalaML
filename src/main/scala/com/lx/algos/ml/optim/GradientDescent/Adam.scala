@@ -20,9 +20,9 @@ class Adam extends AdaGrad {
     super.init_param()
 
     setParams(Seq(
-      "eta" -> 0.002, //梯度累加信息的衰减指数
+      "eta" -> 0.001, //梯度累加信息的衰减指数
       "beta1" -> 0.9,
-      "beta2" -> 0.99
+      "beta2" -> 0.999
     ))
 
     this
@@ -46,8 +46,8 @@ class Adam extends AdaGrad {
 
     breakable {
       var last_avg_loss = Double.MaxValue
-      var cache_moment1 = DenseVector.zeros[Double](x.cols)
-      var cache_moment2 = DenseVector.zeros[Double](x.cols)
+      var cache_moment1 = DenseVector.zeros[Double](x.cols) //一阶梯度累加
+      var cache_moment2 = DenseVector.zeros[Double](x.cols) //二阶梯度累加
 
       var t = 0
       for (epoch <- 1 to iterNum) {
@@ -76,7 +76,7 @@ class Adam extends AdaGrad {
           val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
 
           doPenalty(penalty, eta, lambda)
-          _weight += -eta * bias_moment1 / sqrt(bias_moment2 + eps)
+          _weight += -eta * bias_moment1 / (sqrt(bias_moment2) + eps)
 
           totalLoss += loss.loss(y_pred, y_format)
         }

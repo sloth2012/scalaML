@@ -19,6 +19,9 @@ import scala.util.control.Breaks.{break, breakable}
 
 /**
   * see <https://www.cnblogs.com/qw12/p/5656765.html> and <http://blog.csdn.net/itplus/article/details/21896453>
+  * 这里说明一下，在newton法中所有的weight都采用了与梯度下降包中不同的计算逻辑，即将权重保存为n*1的向量，而不是像sgd、adam那种，保存为1*n的向量。
+  *
+  * TODO 这部分需要优化。
   */
 class DFP extends Optimizer with Param {
 
