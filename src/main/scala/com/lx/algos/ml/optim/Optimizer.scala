@@ -2,7 +2,6 @@ package com.lx.algos.ml.optim
 
 import breeze.linalg.{DenseMatrix, Matrix, norm}
 import com.lx.algos.ml.loss.{LogLoss, LossFunction}
-import com.lx.algos.ml.utils.WeightVector
 
 /**
   *
