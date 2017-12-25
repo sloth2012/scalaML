@@ -11,6 +11,7 @@ Implement some ML algorithms in scala.
     -   Adam
     -   FTRL_Proximal(online learning)
     -   DFP with golden section method
+    -   BFGS with golden section method
 3.  common loss function.
 
 

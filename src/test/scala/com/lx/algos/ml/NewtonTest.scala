@@ -11,7 +11,7 @@ import org.scalatest.FlatSpec
   * @author lx on 11:02 AM 14/12/2017
   */
 
-class NewtonTest  extends FlatSpec{
+class NewtonTest extends FlatSpec {
 
   val (x, y) = DataHandler.binary_cls_data()
   val (new_x, new_y) = MatrixTools.shuffle(x, y.toArray.toSeq)
@@ -22,6 +22,7 @@ class NewtonTest  extends FlatSpec{
     model.set_penalty("l2")
       .set_verbose(true)
       .set_lambda(0.1)
+      .set_loss(new SquaredHingeLoss)
       .fit(new_x, new_y)
 
     println(model.weight)
@@ -34,7 +35,7 @@ class NewtonTest  extends FlatSpec{
     model.set_penalty("l2")
       .set_verbose(true)
       .set_lambda(0.1)
-        .set_loss(new SquaredHingeLoss)
+      .set_loss(new HingeLoss)
       .fit(new_x, new_y)
 
     println(model.weight)
