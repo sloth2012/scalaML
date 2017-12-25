@@ -1,5 +1,6 @@
 package com.lx.algos.ml
 
+import com.lx.algos.ml.loss.{HingeLoss, SquaredHingeLoss}
 import com.lx.algos.ml.optim.newton.{BFGS, DFP}
 import com.lx.algos.ml.utils.MatrixTools
 import org.scalatest.FlatSpec
@@ -33,6 +34,7 @@ class NewtonTest  extends FlatSpec{
     model.set_penalty("l2")
       .set_verbose(true)
       .set_lambda(0.1)
+        .set_loss(new SquaredHingeLoss)
       .fit(new_x, new_y)
 
     println(model.weight)
