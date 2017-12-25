@@ -5,8 +5,9 @@ import breeze.numerics.sqrt
 import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{MatrixTools, Param}
+import com.lx.algos.ml.utils.{MatrixTools, Param, SimpleAutoGrad}
 import com.lx.algos.ml._
+import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}
@@ -49,6 +50,11 @@ class AdaGrad extends Optimizer with Param {
 
   init_param()
 
+  def penaltyNorm = penalty.toLowerCase match {
+    case "l1" => L1NormFunction
+    case "l2" => L2NormFunction
+    case _ => DefaultNormFunction
+  }
 
   lazy val eps = 1e-8
 
@@ -123,20 +129,14 @@ class AdaGrad extends Optimizer with Param {
 
           val y_format = format_y(y(i), loss)
 
-          var dloss = loss.dLoss(y_pred, y_format)
-
-          dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-          else if (dloss > MAX_DLOSS) MAX_DLOSS
-          else dloss
-
-          val grad = dloss * ele
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
+          val grad = autoGrad.grad
           cache_grad += grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
 
-          doPenalty(penalty, lr_grad, lambda)
           _weight += -lr_grad *:* grad
 
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows
 

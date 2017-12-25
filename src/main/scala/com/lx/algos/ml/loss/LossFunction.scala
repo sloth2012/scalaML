@@ -28,7 +28,7 @@ trait LossFunction extends BaseGradFunction{
     DenseMatrix.zipMap_d.map(p, y, loss)
   }
 
-  //求导
+  //求导,参照sklearn实现，因此未改名为grad
   def dLoss(p: Double, y: Double): Double = 0
 
   def dLoss(p: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = {

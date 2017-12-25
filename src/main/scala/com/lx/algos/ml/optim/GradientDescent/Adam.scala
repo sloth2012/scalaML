@@ -4,7 +4,8 @@ import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml._
+import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
+import com.lx.algos.ml.utils.SimpleAutoGrad
 
 import scala.util.control.Breaks.{break, breakable}
 
@@ -30,6 +31,8 @@ class Adam extends AdaGrad {
 
   init_param()
 
+  var t: Int = 0 //已迭代次数
+
   def beta1 = getParam[Double]("beta1")
 
   def set_beta1(beta1: Double) = setParam[Double]("beta1", beta1)
@@ -49,7 +52,6 @@ class Adam extends AdaGrad {
       var cache_moment1 = DenseVector.zeros[Double](x.cols) //一阶梯度累加
       var cache_moment2 = DenseVector.zeros[Double](x.cols) //二阶梯度累加
 
-      var t = 0
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
@@ -61,13 +63,9 @@ class Adam extends AdaGrad {
 
           val y_format = format_y(y(i), loss)
 
-          var dloss = loss.dLoss(y_pred, y_format)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss, penaltyNorm, lambda)
 
-          dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-          else if (dloss > MAX_DLOSS) MAX_DLOSS
-          else dloss
-
-          val grad = dloss * ele
+          val grad = autoGrad.grad
 
           cache_moment1 = beta1 * cache_moment1 + (1 - beta1) * grad
           cache_moment2 = beta2 * cache_moment2 + (1 - beta2) * grad *:* grad
@@ -75,10 +73,9 @@ class Adam extends AdaGrad {
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
           val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
 
-          doPenalty(penalty, eta, lambda)
           _weight += -eta * bias_moment1 / (sqrt(bias_moment2) + eps)
 
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows
 
@@ -103,4 +100,5 @@ class Adam extends AdaGrad {
 
     this
   }
+
 }

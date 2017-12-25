@@ -19,6 +19,7 @@ import scala.util.control.Breaks.breakable
 
 
 //非处理离散类型，如离散类型，需参照kaggle FTRL进行优化，未实现交叉版本的特征
+//该方法为在线方法，未使用autograd接口
 class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
 
   override def setParam[T: ClassTag](name: String, value: T) = {

@@ -18,18 +18,18 @@ class GradientDescentTest extends FlatSpec {
 
   val loss = new LogLoss
 
-//  {
-//    val sgd = new SGD
-//    println(s"this is ${sgd.getClass.getSimpleName} running!")
-//    sgd.set_verbose(true)
-//      .set_printPeriod(1)
-//      .set_eta(0.01)
-////            .set_penalty("l1")
-//          .set_nesterov(true)
-//
-//    sgd.fit(x, y.toArray.toSeq)
-//    println(sgd.weight)
-//  }
+  {
+    val sgd = new SGD
+    println(s"this is ${sgd.getClass.getSimpleName} running!")
+    sgd.set_verbose(true)
+      .set_printPeriod(1)
+      .set_eta(0.01)
+//            .set_penalty("l1")
+          .set_nesterov(true)
+
+    sgd.fit(x, y.toArray.toSeq)
+    println(sgd.weight)
+  }
 //
 //  {
 //    val adagrad = new AdaGrad
@@ -64,17 +64,17 @@ class GradientDescentTest extends FlatSpec {
 //
 //    println(adadelta.weight)
 //  }
-//
-//  {
-//    val adam = new Adam
-//    println(s"this is ${adam.getClass.getSimpleName} running!")
-//    adam.set_verbose(true)
-//      .set_printPeriod(1)
-//      .set_gamma(0.9)
-//      .fit(x, y.toArray.toSeq)
-//
-//    println(adam.weight)
-//  }
+
+  {
+    val adam = new Adam
+    println(s"this is ${adam.getClass.getSimpleName} running!")
+    adam.set_verbose(true)
+      .set_printPeriod(1)
+      .set_gamma(0.9)
+      .fit(x, y.toArray.toSeq)
+
+    println(adam.weight)
+  }
 
   {
     val adamax = new AdaMax

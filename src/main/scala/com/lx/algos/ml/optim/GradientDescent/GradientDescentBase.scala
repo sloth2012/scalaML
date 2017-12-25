@@ -7,6 +7,8 @@ package com.lx.algos.ml.optim.GradientDescent
   * @author lx on 4:57 PM 16/11/2017
   */
 
+import java.lang.Math.signum
+
 import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import com.lx.algos.ml.loss.LossFunction
 import com.lx.algos.ml.metrics.ClassificationMetrics
@@ -25,6 +27,26 @@ class BaseBGD(var eta: Double, //学习速率
               verbose: Boolean = false,
               print_period: Int = 100 //打印周期
              ) extends Optimizer {
+  // Performs L2 regularization scaling
+  def l2penalty(lr: Double, lambda: Double): Unit = {
+    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
+  }
+
+  // Performs L1 regularization scaling
+  def l1penalty(lr: Double, lambda: Double): Unit = {
+    if (lr >= MIN_LR_EPS) {
+      val l1_g = _weight.map(signum)
+      _weight -= lr * lambda * l1_g
+    }
+  }
+
+  def doPenalty(penalty: String, lr: Double, lambda: Double): Unit = {
+    penalty match {
+      case "l2" => l2penalty(lr, lambda)
+      case "l1" => l1penalty(lr, lambda)
+      case _ => //do nothing
+    }
+  }
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
@@ -39,8 +61,6 @@ class BaseBGD(var eta: Double, //学习速率
         var totalLoss: Double = 0
 
         val delta_w = DenseVector.zeros[Double](x.cols)
-        var delta_b: Double = 0.0
-
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
           val y_pred: Double = ele.dot(_weight)
@@ -54,7 +74,6 @@ class BaseBGD(var eta: Double, //学习速率
 
           val update = -dloss
           delta_w += ele * update
-          delta_b += update
 
           totalLoss += loss.loss(y_pred, y_format)
         }
@@ -104,6 +123,27 @@ class BaseSGD(var eta: Double, //学习速率
               verbose: Boolean = false,
               print_period: Int = 100 //打印周期
              ) extends Optimizer {
+
+  // Performs L2 regularization scaling
+  def l2penalty(lr: Double, lambda: Double): Unit = {
+    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
+  }
+
+  // Performs L1 regularization scaling
+  def l1penalty(lr: Double, lambda: Double): Unit = {
+    if (lr >= MIN_LR_EPS) {
+      val l1_g = _weight.map(signum)
+      _weight -= lr * lambda * l1_g
+    }
+  }
+
+  def doPenalty(penalty: String, lr: Double, lambda: Double): Unit = {
+    penalty match {
+      case "l2" => l2penalty(lr, lambda)
+      case "l1" => l1penalty(lr, lambda)
+      case _ => //do nothing
+    }
+  }
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
@@ -174,7 +214,7 @@ class BaseMSGD(var eta: Double, //学习速率
                loss: LossFunction, //损失函数
                iterNum: Int = 1000, //迭代次数
                penalty: String = "l2",
-               batch: Int = 128, //一个batch样本数
+               batch: Int = 5000, //一个batch样本数
                verbose: Boolean = false,
                print_period: Int = 100 //打印周期
               ) extends Optimizer {
@@ -186,6 +226,27 @@ class BaseMSGD(var eta: Double, //学习速率
       val (new_X, new_y) = MatrixTools.shuffle(X, y)
 
       MatrixTools.vsplit(new_X, new_y, minibatch_size)
+    }
+  }
+
+  // Performs L2 regularization scaling
+  def l2penalty(lr: Double, lambda: Double): Unit = {
+    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
+  }
+
+  // Performs L1 regularization scaling
+  def l1penalty(lr: Double, lambda: Double): Unit = {
+    if (lr >= MIN_LR_EPS) {
+      val l1_g = _weight.map(signum)
+      _weight -= lr * lambda * l1_g
+    }
+  }
+
+  def doPenalty(penalty: String, lr: Double, lambda: Double): Unit = {
+    penalty match {
+      case "l2" => l2penalty(lr, lambda)
+      case "l1" => l1penalty(lr, lambda)
+      case _ => //do nothing
     }
   }
 
@@ -204,7 +265,6 @@ class BaseMSGD(var eta: Double, //学习速率
         val batch_data = get_minibatch(x, y, batch)
         for ((sub_x, sub_y) <- batch_data.asInstanceOf[Seq[(DenseMatrix[Double], Seq[Double])]]) {
           val delta_w = DenseVector.zeros[Double](x.cols)
-          var delta_b: Double = 0.0
           for (i <- 0 until sub_x.rows) {
             val ele = sub_x(i, ::).t
             val y_pred: Double = ele.dot(_weight)
@@ -219,7 +279,6 @@ class BaseMSGD(var eta: Double, //学习速率
 
             val update = -dloss
             delta_w += ele * update
-            delta_b += update
 
             totalLoss += loss.loss(y_pred, y_format)
           }

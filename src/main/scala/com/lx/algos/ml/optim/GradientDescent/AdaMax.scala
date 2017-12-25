@@ -4,7 +4,9 @@ import breeze.linalg.{DenseVector, Matrix, max}
 import breeze.numerics.{abs, sqrt}
 import com.lx.algos.ml.MAX_DLOSS
 import com.lx.algos.ml.metrics.ClassificationMetrics
+import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
+import com.lx.algos.ml.utils.SimpleAutoGrad
 
 import scala.util.control.Breaks.{break, breakable}
 
@@ -18,6 +20,7 @@ import scala.util.control.Breaks.{break, breakable}
   * 该方法是adam的变种，只是在学习率上限上加了一个范围约束，详见<http://blog.csdn.net/u012759136/article/details/52302426>
   */
 class AdaMax extends Adam {
+
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
@@ -29,7 +32,6 @@ class AdaMax extends Adam {
       var cache_moment1 = DenseVector.zeros[Double](x.cols) //一阶梯度累加
       var cache_moment2 = DenseVector.zeros[Double](x.cols) //二阶梯度累加
 
-      var t = 0
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
@@ -41,13 +43,9 @@ class AdaMax extends Adam {
 
           val y_format = format_y(y(i), loss)
 
-          var dloss = loss.dLoss(y_pred, y_format)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
 
-          dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-          else if (dloss > MAX_DLOSS) MAX_DLOSS
-          else dloss
-
-          val grad = dloss * ele
+          var grad = autoGrad.grad
 
           cache_moment1 = beta1 * cache_moment1 + (1 - beta1) * grad
           cache_moment2 = max(beta2 * cache_moment1, abs(grad))
@@ -55,10 +53,9 @@ class AdaMax extends Adam {
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
           val bias_moment2 = cache_moment2
 
-//          doPenalty(penalty, eta, lambda)
           _weight += -eta * bias_moment1 / (bias_moment2 + eps)
 
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows
 

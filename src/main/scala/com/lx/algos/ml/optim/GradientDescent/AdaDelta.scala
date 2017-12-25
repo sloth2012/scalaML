@@ -5,6 +5,7 @@ import breeze.numerics.sqrt
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
 import com.lx.algos.ml._
+import com.lx.algos.ml.utils.SimpleAutoGrad
 
 import scala.util.control.Breaks.{break, breakable}
 
@@ -49,23 +50,17 @@ class AdaDelta extends AdaGrad{
 
           val y_format = format_y(y(i), loss)
 
-          var dloss = loss.dLoss(y_pred, y_format)
-
-          dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-          else if (dloss > MAX_DLOSS) MAX_DLOSS
-          else dloss
-
-          val grad = dloss * ele
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
+          val grad = autoGrad.grad
 
           cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
           val lr_grad = sqrt(cache_delateT + eps) / sqrt(cache_grad + eps)
           val deltaT = -lr_grad *:* grad
           cache_delateT = gamma * cache_delateT + (1 - gamma) * deltaT *:* deltaT
 
-          doPenalty(penalty, lr_grad, lambda)
           _weight += deltaT
 
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows
 
