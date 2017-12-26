@@ -4,7 +4,6 @@ import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.utils.SimpleAutoGrad
 
 import scala.util.control.Breaks.{break, breakable}
@@ -75,6 +74,7 @@ class Adam extends AdaGrad {
 
           _weight += -eta * bias_moment1 / (sqrt(bias_moment2) + eps)
 
+          autoGrad.updateTheta(_weight)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

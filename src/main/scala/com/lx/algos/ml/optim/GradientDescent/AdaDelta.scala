@@ -4,7 +4,6 @@ import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml._
 import com.lx.algos.ml.utils.SimpleAutoGrad
 
 import scala.util.control.Breaks.{break, breakable}
@@ -60,6 +59,7 @@ class AdaDelta extends AdaGrad{
 
           _weight += deltaT
 
+          autoGrad.updateTheta(_weight)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

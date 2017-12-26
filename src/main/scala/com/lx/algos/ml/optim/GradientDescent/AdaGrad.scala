@@ -6,7 +6,6 @@ import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
 import com.lx.algos.ml.utils.{MatrixTools, Param, SimpleAutoGrad}
-import com.lx.algos.ml._
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 
 import scala.reflect.ClassTag
@@ -136,6 +135,7 @@ class AdaGrad extends Optimizer with Param {
 
           _weight += -lr_grad *:* grad
 
+          autoGrad.updateTheta(_weight)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

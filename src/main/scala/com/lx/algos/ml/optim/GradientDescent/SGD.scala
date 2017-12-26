@@ -147,6 +147,7 @@ class SGD extends Optimizer with Param {
             _weight += -velocity
           }
 
+          autoGrad.updateTheta(_weight)
           totalLoss += autoGrad.loss
           last_grad = grad
         }

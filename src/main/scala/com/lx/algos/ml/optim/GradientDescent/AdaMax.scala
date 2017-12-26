@@ -55,6 +55,7 @@ class AdaMax extends Adam {
 
           _weight += -eta * bias_moment1 / (bias_moment2 + eps)
 
+          autoGrad.updateTheta(_weight)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

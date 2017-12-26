@@ -59,4 +59,9 @@ class SimpleAutoGrad(x: DenseVector[Double],
   val sag = new AutoGrad(x.toDenseMatrix.reshape(1, x.length), DenseVector(y).toDenseMatrix.reshape(1, 1), theta.toDenseMatrix.reshape(x.length, 1), lossFunction, normFunction, lambda)
   def loss: Double = sag.avgLoss
   def grad: DenseVector[Double] = sag.avgGrad.toDenseVector
+  def updateTheta(newTheta: DenseVector[Double]): SimpleAutoGrad = {
+    theta = newTheta
+    sag.updateTheta(newTheta.toDenseMatrix.reshape(x.length, 1))
+    this
+  }
 }

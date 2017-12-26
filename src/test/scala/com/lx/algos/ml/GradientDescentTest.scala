@@ -30,40 +30,40 @@ class GradientDescentTest extends FlatSpec {
     sgd.fit(x, y.toArray.toSeq)
     println(sgd.weight)
   }
-//
-//  {
-//    val adagrad = new AdaGrad
-//    println(s"this is ${adagrad.getClass.getSimpleName} running!")
-//    adagrad.set_verbose(true)
-//      .set_printPeriod(10)
-//      .set_eta(0.01)
-////      .set_penalty("l2")
-//
-//    adagrad.fit(x, y.toArray.toSeq)
-//    println(adagrad.weight)
-//  }
-//
-//
-//  {
-//    val rmsprop = new RMSProp
-//    println(s"this is ${rmsprop.getClass.getSimpleName} running!")
-//    rmsprop.set_verbose(true)
-//      .set_printPeriod(1)
-//
-//    rmsprop.fit(x, y.toArray.toSeq)
-//    println(rmsprop.weight)
-//  }
-//
-//  {
-//    val adadelta = new AdaDelta
-//    println(s"this is ${adadelta.getClass.getSimpleName} running!")
-//    adadelta.set_verbose(true)
-//      .set_printPeriod(1)
-//      .set_gamma(0.9)
-//      .fit(x, y.toArray.toSeq)
-//
-//    println(adadelta.weight)
-//  }
+
+  {
+    val adagrad = new AdaGrad
+    println(s"this is ${adagrad.getClass.getSimpleName} running!")
+    adagrad.set_verbose(true)
+      .set_printPeriod(10)
+      .set_eta(0.01)
+//      .set_penalty("l2")
+
+    adagrad.fit(x, y.toArray.toSeq)
+    println(adagrad.weight)
+  }
+
+
+  {
+    val rmsprop = new RMSProp
+    println(s"this is ${rmsprop.getClass.getSimpleName} running!")
+    rmsprop.set_verbose(true)
+      .set_printPeriod(1)
+
+    rmsprop.fit(x, y.toArray.toSeq)
+    println(rmsprop.weight)
+  }
+
+  {
+    val adadelta = new AdaDelta
+    println(s"this is ${adadelta.getClass.getSimpleName} running!")
+    adadelta.set_verbose(true)
+      .set_printPeriod(1)
+      .set_gamma(0.9)
+      .fit(x, y.toArray.toSeq)
+
+    println(adadelta.weight)
+  }
 
   {
     val adam = new Adam

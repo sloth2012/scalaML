@@ -53,4 +53,5 @@ trait Optimizer extends WeightVector{
   }
 
   protected def format_y(y: DenseMatrix[Double], loss: LossFunction): DenseMatrix[Double] = y.map(format_y(_, loss))
+  protected def format_y(y: Seq[Double], loss: LossFunction): Seq[Double] = y.map(format_y(_, loss))
 }

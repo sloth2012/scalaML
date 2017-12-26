@@ -23,26 +23,26 @@ class BaseGradientDescentTestFunction extends FlatSpec {
 
 
   {
-    val bgd = new BaseBGD(0.001, 0.15, loss, 10000, verbose = true,  print_period = 500)
+    val bgd = new BaseBGD(0.001, 0.15, loss, 10000, verbose = true,  print_period = 1)
 
     bgd.fit(x, y.toArray.toSeq)
     val y_pred = bgd.predict(x)
     println(bgd.weight)
     println(s"acc: ${ClassificationMetrics.accuracy_score(y_pred, y.toArray.toSeq)}")
   }
+//
+//  {
+//    val sgd = new BaseSGD(0.001, 0.15, loss, 10000, verbose = true, print_period = 100)
+//
+//    sgd.fit(x, y.toArray.toSeq)
+//    val y_pred = sgd.predict(x)
+//    println(sgd.weight)
+//    println(s"acc: ${ClassificationMetrics.accuracy_score(y_pred, y.toArray.toSeq)}")
+//
+//  }
 
   {
-    val sgd = new BaseSGD(0.001, 0.15, loss, 10000, verbose = true, print_period = 100)
-
-    sgd.fit(x, y.toArray.toSeq)
-    val y_pred = sgd.predict(x)
-    println(sgd.weight)
-    println(s"acc: ${ClassificationMetrics.accuracy_score(y_pred, y.toArray.toSeq)}")
-
-  }
-
-  {
-    val mbgd = new BaseMSGD(0.001, 0.15, loss, 10000, verbose = true, batch = 500)
+    val mbgd = new BaseMSGD(0.001, 0.15, loss, 10000, verbose = true, batch = 4000, print_period = 1)
 
     mbgd.fit(x, y.toArray.toSeq)
     val y_pred = mbgd.predict(x)

@@ -19,7 +19,7 @@ object MatrixTools {
     val batch_num = if (mat.rows % batch == 0) mat.rows / batch else mat.rows / batch + 1
 
     0 until batch_num map {
-      i => mat(i until Math.min(mat.rows, (i+1)*batch), ::)
+      i => mat(i * batch until Math.min(mat.rows, (i+1)*batch), ::)
     }
   }
 

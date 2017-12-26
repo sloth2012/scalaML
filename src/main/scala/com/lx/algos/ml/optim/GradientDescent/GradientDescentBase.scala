@@ -75,7 +75,7 @@ class BaseBGD(var eta: Double, //学习速率
           val update = -dloss
           delta_w += ele * update
 
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += loss.loss(ele.dot(_weight), y_format)
         }
 
         doPenalty(penalty, eta, lambda)
@@ -174,7 +174,7 @@ class BaseSGD(var eta: Double, //学习速率
 
           _weight += ele * update
 
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += loss.loss(ele.dot(_weight), y_format)
         }
         val avg_loss = totalLoss / x.rows
 
@@ -280,17 +280,16 @@ class BaseMSGD(var eta: Double, //学习速率
             val update = -dloss
             delta_w += ele * update
 
-            totalLoss += loss.loss(y_pred, y_format)
+            totalLoss += loss.loss(ele.dot(_weight), y_format)
           }
 
           doPenalty(penalty, eta, lambda)
-
-          _weight += delta_w * (1.0 / sub_x.rows) * eta
+          _weight += (delta_w * (1.0 / sub_x.rows) * eta)
         }
 
         val avg_loss = totalLoss / x.rows
 
-        val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS
+
 
         if (verbose) {
           if (epoch % print_period == 0 || epoch == iterNum) {
@@ -298,6 +297,8 @@ class BaseMSGD(var eta: Double, //学习速率
             log_print(epoch, acc, avg_loss)
           }
         }
+
+        val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS
         if (converged) {
           println(s"converged at iter $epoch!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)

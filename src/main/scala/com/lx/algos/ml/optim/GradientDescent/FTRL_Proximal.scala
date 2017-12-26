@@ -140,7 +140,7 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
           val y_pred: Double = _predict(ele)
           val y_format = format_y(y(i), loss)
           update(ele, y_pred, y_format)
-          totalLoss += loss.loss(y_pred, y_format)
+          totalLoss += loss.loss(_predict(ele), y_format)
         }
         val avg_loss = totalLoss / x.rows
 
@@ -152,7 +152,6 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
         }
       }
     }
-
     this
 
   }
