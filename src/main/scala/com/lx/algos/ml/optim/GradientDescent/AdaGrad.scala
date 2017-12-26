@@ -4,8 +4,8 @@ import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
-import com.lx.algos.ml.optim.{Optimizer, SimpleAutoGrad}
-import com.lx.algos.ml.utils.{MatrixTools, Param}
+import com.lx.algos.ml.optim.Optimizer
+import com.lx.algos.ml.utils.{MatrixTools, Param, SimpleAutoGrad}
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 
 import scala.reflect.ClassTag
