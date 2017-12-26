@@ -58,11 +58,11 @@ class Adam extends AdaGrad {
         for (i <- 0 until x.rows) {
           t += 1
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_weight)
+          val y_pred: Double = ele.dot(_theta.toDenseVector)
 
           val y_format = format_y(y(i), loss)
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss, penaltyNorm, lambda)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss, penaltyNorm, lambda)
 
           val grad = autoGrad.grad
 
@@ -72,9 +72,9 @@ class Adam extends AdaGrad {
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
           val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
 
-          _weight += -eta * bias_moment1 / (sqrt(bias_moment2) + eps)
+          _theta += (-eta * bias_moment1 / (sqrt(bias_moment2) + eps)).toDenseMatrix.reshape(_theta.rows, 1)
 
-          autoGrad.updateTheta(_weight)
+          autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

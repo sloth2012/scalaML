@@ -51,15 +51,15 @@ class AutoGrad(
 //该类别主要用于GradientDescent包下的单一更新元素使用，未来将考虑重构该模块
 class SimpleAutoGrad(x: DenseVector[Double],
                      y: Double,
-                     var theta: DenseVector[Double],
+                     var theta: DenseMatrix[Double],
                      lossFunction: LossFunction,
                      normFunction: NormFunction,
                      lambda: Double = 0.15 //正则化系数
                     ) {
-  val sag = new AutoGrad(x.toDenseMatrix.reshape(1, x.length), DenseVector(y).toDenseMatrix.reshape(1, 1), theta.toDenseMatrix.reshape(x.length, 1), lossFunction, normFunction, lambda)
+  val sag = new AutoGrad(x.toDenseMatrix.reshape(1, x.length), DenseVector(y).toDenseMatrix.reshape(1, 1), theta, lossFunction, normFunction, lambda)
   def loss: Double = sag.avgLoss
   def grad: DenseVector[Double] = sag.avgGrad.toDenseVector
-  def updateTheta(newTheta: DenseVector[Double]): SimpleAutoGrad = {
+  def updateTheta(newTheta: DenseMatrix[Double]): SimpleAutoGrad = {
     theta = newTheta
     sag.updateTheta(newTheta.toDenseMatrix.reshape(x.length, 1))
     this

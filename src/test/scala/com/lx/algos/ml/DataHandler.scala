@@ -33,22 +33,7 @@ object DataHandler {
   }
 
   def main(args: Array[String]): Unit = {
-
     val (x, y) = binary_cls_data()
-
     println(y.length)
-
-    val w = MatrixTools.shuffle[Double](x, y.toArray)
-
-    val v = w._1(1, ::)
-
-    println(v)
-    println("*********")
-    0 until x.rows map {
-      case i if(x(i, ::) == v) => println(x(i, ::))
-      case _ => ()
-    }
-
-
   }
 }

@@ -126,12 +126,12 @@ class SGD extends Optimizer with Param {
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_weight)
+          val y_pred: Double = ele.dot(_theta.toDenseVector)
 
           val y_format = format_y(y(i), loss)
 
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
           val grad = autoGrad.grad
 
           if (nesterov) {
@@ -140,14 +140,14 @@ class SGD extends Optimizer with Param {
 
             //pytorch version, really fast
             velocity = velocity * gamma + grad
-            _weight += -eta * velocity
+            _theta += (-eta * velocity).toDenseMatrix.reshape(_theta.rows, 1)
           } else {
             //momentum update
             velocity = gamma * velocity + grad * eta
-            _weight += -velocity
+            _theta += -velocity.toDenseMatrix.reshape(_theta.rows, 1)
           }
 
-          autoGrad.updateTheta(_weight)
+          autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.loss
           last_grad = grad
         }

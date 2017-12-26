@@ -45,11 +45,11 @@ class AdaDelta extends AdaGrad{
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_weight)
+          val y_pred: Double = ele.dot(_theta.toDenseVector)
 
           val y_format = format_y(y(i), loss)
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
           val grad = autoGrad.grad
 
           cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
@@ -57,9 +57,9 @@ class AdaDelta extends AdaGrad{
           val deltaT = -lr_grad *:* grad
           cache_delateT = gamma * cache_delateT + (1 - gamma) * deltaT *:* deltaT
 
-          _weight += deltaT
+          _theta += deltaT.toDenseMatrix.reshape(deltaT.length, 1)
 
-          autoGrad.updateTheta(_weight)
+          autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

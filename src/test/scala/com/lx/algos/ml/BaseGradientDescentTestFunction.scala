@@ -22,14 +22,14 @@ class BaseGradientDescentTestFunction extends FlatSpec {
   val (new_x, new_y) = MatrixTools.shuffle(x, y.toArray.toSeq)
 
 
-//  {
-//    val bgd = new BaseBGD(0.01, 0.15, loss, 10000, verbose = true,  print_period = 1)
-//
-//    bgd.fit(x, y.toArray.toSeq)
-//    val y_pred = bgd.predict(x)
-//    println(bgd.weight)
-//    println(s"acc: ${ClassificationMetrics.accuracy_score(y_pred, y.toArray.toSeq)}")
-//  }
+  {
+    val bgd = new BaseBGD(0.01, 0.15, loss, 10000, verbose = true,  print_period = 1)
+
+    bgd.fit(x, y.toArray.toSeq)
+    val y_pred = bgd.predict(x)
+    println(bgd.weight)
+    println(s"acc: ${ClassificationMetrics.accuracy_score(y_pred, y.toArray.toSeq)}")
+  }
 
   {
     val sgd = new BaseSGD(0.01, 0.15, loss, 10000, verbose = true, print_period = 100)

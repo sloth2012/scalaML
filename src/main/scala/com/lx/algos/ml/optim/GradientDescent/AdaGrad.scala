@@ -124,18 +124,18 @@ class AdaGrad extends Optimizer with Param {
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_weight)
+          val y_pred: Double = ele.dot(_theta.toDenseVector)
 
           val y_format = format_y(y(i), loss)
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
           val grad = autoGrad.grad
           cache_grad += grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
 
-          _weight += -lr_grad *:* grad
+          _theta += (-lr_grad *:* grad).toDenseMatrix.reshape(_theta.rows, 1)
 
-          autoGrad.updateTheta(_weight)
+          autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows

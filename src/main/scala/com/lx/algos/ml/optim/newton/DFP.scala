@@ -99,11 +99,10 @@ class DFP extends Optimizer with Param {
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
     val y = format_y(DenseMatrix.create(Y.size, 1, Y.toArray), loss)
-    var theta = DenseMatrix.ones[Double](x.cols, 1)
 
     Hessian = DenseMatrix.eye[Double](x.cols)
 
-    val autoGrad = new AutoGrad(x, y, theta, loss, penaltyNorm, lambda)
+    val autoGrad = new AutoGrad(x, y, _theta, loss, penaltyNorm, lambda)
     var J = autoGrad.avgLoss
 
     var Gradient = autoGrad.avgGrad
@@ -126,7 +125,7 @@ class DFP extends Optimizer with Param {
         var alpha = 0.0
 
         var (alpha1, alpha2) = (0.0, h)
-        var (theta1, theta2) = (theta + alpha1 * Dk, theta + alpha2 * Dk)
+        var (theta1, theta2) = (_theta + alpha1 * Dk, _theta + alpha2 * Dk)
 
         var f1 = autoGrad.updateTheta(theta1).avgLoss
         var f2 = autoGrad.updateTheta(theta2).avgLoss
@@ -154,7 +153,7 @@ class DFP extends Optimizer with Param {
             }
 
             val alpha3 = alpha2 + h
-            val theta3 = theta + alpha3 * Dk
+            val theta3 = _theta + alpha3 * Dk
             val f3 = autoGrad.updateTheta(theta3).avgLoss
 
 //            println(s"f3 - f2 is ${f3 - f2}")
@@ -179,8 +178,8 @@ class DFP extends Optimizer with Param {
             alpha1 = a + 0.382 * (b - a)
             alpha2 = a + 0.618 * (b - a)
 
-            theta1 = theta + alpha1 * Dk
-            theta2 = theta + alpha2 * Dk
+            theta1 = _theta + alpha1 * Dk
+            theta2 = _theta + alpha2 * Dk
 
             f1 = autoGrad.updateTheta(theta1).avgLoss
             f2 = autoGrad.updateTheta(theta2).avgLoss
@@ -197,18 +196,17 @@ class DFP extends Optimizer with Param {
 
 //        println(s"optimal alpha in epoch $epoch is $alpha")
 
-        val theta_old = theta
+        val theta_old = _theta
         val grad_old = - autoGrad.updateTheta(theta_old).avgGrad
-        theta = theta + alpha * Dk
-        _weight = theta.toDenseVector
+        _theta = _theta + alpha * Dk
 
         //update the Hessian matrix
 
-        J = autoGrad.updateTheta(theta).avgLoss
+        J = autoGrad.updateTheta(_theta).avgLoss
 
         //here to estimate Hessian'inv
         //sk = ThetaNew - ThetaOld = alpha * inv(H) * Gradient
-        val sk = theta - theta_old
+        val sk = _theta - theta_old
         //yk = GradNew - GradOld
         //the grad is average value
         val grad = - autoGrad.avgGrad

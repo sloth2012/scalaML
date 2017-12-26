@@ -8,7 +8,7 @@ package com.lx.algos.ml.optim.GradientDescent
   */
 
 
-import breeze.linalg.{DenseMatrix, Matrix}
+import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import com.lx.algos.ml.loss.LossFunction
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
@@ -39,17 +39,15 @@ class BaseBGD(var eta: Double, //学习速率
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
     val y = format_y(DenseMatrix.create(Y.size, 1, Y.toArray), loss)
-    var theta = DenseMatrix.ones[Double](x.cols, 1)
 
-    val autoGrad = new AutoGrad(x, y, theta, loss, penaltyNorm, lambda)
+    val autoGrad = new AutoGrad(x, y, _theta, loss, penaltyNorm, lambda)
 
     breakable {
       for (epoch <- 1 to iterNum) {
 
         val last_avg_loss = autoGrad.avgLoss
-        theta -= eta * autoGrad.avgGrad
-        autoGrad.updateTheta(theta)
-        _weight = theta.toDenseVector
+        _theta -= eta * autoGrad.avgGrad
+        autoGrad.updateTheta(_theta)
 
         val avg_loss = autoGrad.avgLoss
 
@@ -113,16 +111,16 @@ class BaseSGD(var eta: Double, //学习速率
 
         for (i <- 0 until x.rows) {
           val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_weight)
+          val y_pred: Double = ele.dot(_theta.toDenseVector)
 
           val y_format = format_y(y(i), loss)
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
-          val grad = autoGrad.grad
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
+          val grad: DenseVector[Double] = autoGrad.grad
 
-          _weight -= eta * grad
+          _theta -= eta * grad.toDenseMatrix.reshape(grad.length, 1)
 
-          autoGrad.updateTheta(_weight)
+          autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows
@@ -190,7 +188,6 @@ class BaseMSGD(var eta: Double, //学习速率
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
     val y = format_y(DenseMatrix.create(Y.size, 1, Y.toArray), loss)
-    var theta = DenseMatrix.ones[Double](x.cols, 1)
 
     breakable {
       var last_avg_loss = Double.MaxValue
@@ -201,13 +198,12 @@ class BaseMSGD(var eta: Double, //学习速率
 
         for ((sub_x, sub_y) <- batch_data.asInstanceOf[Seq[(DenseMatrix[Double], Seq[Double])]]) {
 
-          val subAutoGrad = new AutoGrad(sub_x, DenseMatrix(sub_y).reshape(sub_y.length, 1), theta, loss, penaltyNorm, lambda)
-          theta -= eta * subAutoGrad.avgGrad
-          subAutoGrad.updateTheta(theta)
-          _weight = theta.toDenseVector
+          val subAutoGrad = new AutoGrad(sub_x, DenseMatrix(sub_y).reshape(sub_y.length, 1), _theta, loss, penaltyNorm, lambda)
+          _theta -= eta * subAutoGrad.avgGrad
+          subAutoGrad.updateTheta(_theta)
         }
 
-        val autoGrad = new AutoGrad(x, y, theta, loss, penaltyNorm, lambda)
+        val autoGrad = new AutoGrad(x, y, _theta, loss, penaltyNorm, lambda)
         val avg_loss = autoGrad.avgLoss
         if (verbose) {
           if (epoch % print_period == 0 || epoch == iterNum) {

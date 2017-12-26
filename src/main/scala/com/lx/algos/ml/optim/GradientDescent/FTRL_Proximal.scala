@@ -62,7 +62,7 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
     val square_grad = grad *:* grad
     val sigma = (sqrt(N + square_grad) - sqrt(N)) / alpha
     N += square_grad
-    Z += grad - sigma *:* _weight
+    Z += grad - sigma *:* _theta.toDenseVector
     this
   }
 
@@ -119,7 +119,7 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
       wTx += new_W(i) * x(i)
     }
 
-    _weight = new_W
+    _theta = new_W.toDenseMatrix.reshape(new_W.length, 1)
     wTx
   }
 
