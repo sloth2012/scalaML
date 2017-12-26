@@ -8,7 +8,9 @@ Implement some ML algorithms in scala.
     -   AdaGrad
     -   AdaDelta
     -   RMSProp
-    -   Adam/AdaMax/Nadam
+    -   Adam with AMSGrad
+    -   AdaMax
+    -   Nadam
     -   FTRL_Proximal(online learning)
 3.  Quasi-Newton Methods
     -   DFP with golden section method
