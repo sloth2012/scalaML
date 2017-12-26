@@ -24,8 +24,8 @@ class GradientDescentTest extends FlatSpec {
     sgd.set_verbose(true)
       .set_printPeriod(1)
       .set_eta(0.01)
-//            .set_penalty("l1")
-          .set_nesterov(true)
+      //            .set_penalty("l1")
+      .set_nesterov(true)
 
     sgd.fit(x, y.toArray.toSeq)
     println(sgd.weight)
@@ -37,7 +37,7 @@ class GradientDescentTest extends FlatSpec {
     adagrad.set_verbose(true)
       .set_printPeriod(10)
       .set_eta(0.01)
-//      .set_penalty("l2")
+    //      .set_penalty("l2")
 
     adagrad.fit(x, y.toArray.toSeq)
     println(adagrad.weight)

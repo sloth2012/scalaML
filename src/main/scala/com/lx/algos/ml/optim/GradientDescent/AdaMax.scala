@@ -21,6 +21,16 @@ import scala.util.control.Breaks.{break, breakable}
   */
 class AdaMax extends Adam {
 
+  override def gamma: Double = {
+    println(s"warning: gamma will be not  used in ${getClass.getSimpleName}")
+    super.gamma
+  }
+
+  override def set_gamma(gamma: Double): AdaGrad = {
+    println(s"warning: gamma will be not used in ${getClass.getSimpleName} though you set it!")
+    super.set_gamma(gamma)
+  }
+
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
@@ -30,7 +40,7 @@ class AdaMax extends Adam {
     breakable {
       var last_avg_loss = Double.MaxValue
       var cache_moment1 = DenseVector.zeros[Double](x.cols) //一阶梯度累加
-      var cache_moment2 = 0.0 //二阶梯度累加
+      var cache_moment2 = DenseVector.zeros[Double](x.cols) //二阶梯度累加
 
       for (epoch <- 1 to iterNum) {
 
@@ -48,7 +58,7 @@ class AdaMax extends Adam {
           var grad = autoGrad.grad
 
           cache_moment1 = beta1 * cache_moment1 + (1 - beta1) * grad
-          cache_moment2 = max(beta2 * cache_moment2, norm(grad))
+          cache_moment2 = max(beta2 * cache_moment2, abs(grad))
 
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
           val bias_moment2 = cache_moment2

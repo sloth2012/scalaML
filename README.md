@@ -8,7 +8,7 @@ Implement some ML algorithms in scala.
     -   AdaGrad
     -   AdaDelta
     -   RMSProp
-    -   Adam
+    -   Adam/AdaMax
     -   FTRL_Proximal(online learning)
     -   DFP with golden section method
     -   BFGS with golden section method
