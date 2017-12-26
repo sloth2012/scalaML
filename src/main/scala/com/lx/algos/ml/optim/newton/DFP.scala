@@ -78,7 +78,7 @@ class DFP extends Optimizer with Param {
   def set_lambda(lambda: Double) = setParam[Double]("lambda", lambda)
 
 
-  private val MIN_POS_EPS = -1e-3 //正定矩阵的约束，修正版的DFP使用，主要是发现直接要求正定，效果很差，但确实大部分时候，sk.t*yk的值又非常接近于0，因此做了一个最小阈值
+  private val MIN_POS_EPS = 0.0 //正定矩阵的约束，修正版的DFP使用，主要是发现直接要求正定，效果很差，但确实大部分时候，sk.t*yk的值又非常接近于0，因此做了一个最小阈值
 
   private val MIN_ALPHA_LOSS_EPS = 0.01
 
