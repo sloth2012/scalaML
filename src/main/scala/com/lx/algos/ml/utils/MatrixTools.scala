@@ -28,8 +28,12 @@ object MatrixTools {
     val batch_num = if (mat.rows % batch == 0) mat.rows / batch else mat.rows / batch + 1
 
     0 until batch_num map {
-      i => val end_index = Math.min(mat.rows, (i+1)*batch)
-        (mat(i * batch until end_index,  ::),  y.slice(i, end_index))
+      i => {
+        val start_index = i * batch
+        val end_index = Math.min(mat.rows, (i + 1) * batch)
+
+        (mat(start_index until end_index, ::), y.slice(start_index, end_index))
+      }
     }
   }
 

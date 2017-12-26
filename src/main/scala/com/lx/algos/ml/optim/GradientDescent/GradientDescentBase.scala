@@ -7,14 +7,13 @@ package com.lx.algos.ml.optim.GradientDescent
   * @author lx on 4:57 PM 16/11/2017
   */
 
-import java.lang.Math.signum
 
-import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
+import breeze.linalg.{DenseMatrix, Matrix}
 import com.lx.algos.ml.loss.LossFunction
 import com.lx.algos.ml.metrics.ClassificationMetrics
+import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.MatrixTools
-import com.lx.algos.ml._
+import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, SimpleAutoGrad}
 
 import scala.util.control.Breaks._
 
@@ -27,79 +26,49 @@ class BaseBGD(var eta: Double, //学习速率
               verbose: Boolean = false,
               print_period: Int = 100 //打印周期
              ) extends Optimizer {
-  // Performs L2 regularization scaling
-  def l2penalty(lr: Double, lambda: Double): Unit = {
-    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
+
+  def penaltyNorm = penalty.toLowerCase match {
+    case "l1" => L1NormFunction
+    case "l2" => L2NormFunction
+    case _ => DefaultNormFunction
   }
 
-  // Performs L1 regularization scaling
-  def l1penalty(lr: Double, lambda: Double): Unit = {
-    if (lr >= MIN_LR_EPS) {
-      val l1_g = _weight.map(signum)
-      _weight -= lr * lambda * l1_g
-    }
-  }
-
-  def doPenalty(penalty: String, lr: Double, lambda: Double): Unit = {
-    penalty match {
-      case "l2" => l2penalty(lr, lambda)
-      case "l1" => l1penalty(lr, lambda)
-      case _ => //do nothing
-    }
-  }
-
-  override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
-    assert(X.rows == y.size)
+  override def fit(X: Matrix[Double], Y: Seq[Double]): Optimizer = {
+    assert(X.rows == Y.size)
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
+    val y = format_y(DenseMatrix.create(Y.size, 1, Y.toArray), loss)
+    var theta = DenseMatrix.ones[Double](x.cols, 1)
+
+    val autoGrad = new AutoGrad(x, y, theta, loss, penaltyNorm, lambda)
 
     breakable {
-      var last_avg_loss = Double.MaxValue
       for (epoch <- 1 to iterNum) {
 
-        var totalLoss: Double = 0
+        val last_avg_loss = autoGrad.avgLoss
+        theta -= eta * autoGrad.avgGrad
+        autoGrad.updateTheta(theta)
+        _weight = theta.toDenseVector
 
-        val delta_w = DenseVector.zeros[Double](x.cols)
-        for (i <- 0 until x.rows) {
-          val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_weight)
-          val y_format = format_y(y(i), loss)
+        val avg_loss = autoGrad.avgLoss
 
-          var dloss = loss.dLoss(y_pred, y_format)
-
-          dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-          else if (dloss > MAX_DLOSS) MAX_DLOSS
-          else dloss
-
-          val update = -dloss
-          delta_w += ele * update
-
-          totalLoss += loss.loss(ele.dot(_weight), y_format)
-        }
-
-        doPenalty(penalty, eta, lambda)
-        _weight += delta_w * (1.0 / x.rows) * eta
-
-
-        val avg_loss = totalLoss / x.rows
-
+//        println(Math.abs(avg_loss - last_avg_loss))
         val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS
 
         if (verbose) {
           if (epoch % print_period == 0 || epoch == iterNum) {
-            val acc = ClassificationMetrics.accuracy_score(predict(X), y)
+            val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
             log_print(epoch, acc, avg_loss)
           }
         }
         if (converged) {
           println(s"converged at iter $epoch!")
-          val acc = ClassificationMetrics.accuracy_score(predict(X), y)
+          val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
           log_print(epoch, acc, avg_loss)
           break
         }
 
-        last_avg_loss = avg_loss
       }
     }
     this
@@ -124,25 +93,10 @@ class BaseSGD(var eta: Double, //学习速率
               print_period: Int = 100 //打印周期
              ) extends Optimizer {
 
-  // Performs L2 regularization scaling
-  def l2penalty(lr: Double, lambda: Double): Unit = {
-    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
-  }
-
-  // Performs L1 regularization scaling
-  def l1penalty(lr: Double, lambda: Double): Unit = {
-    if (lr >= MIN_LR_EPS) {
-      val l1_g = _weight.map(signum)
-      _weight -= lr * lambda * l1_g
-    }
-  }
-
-  def doPenalty(penalty: String, lr: Double, lambda: Double): Unit = {
-    penalty match {
-      case "l2" => l2penalty(lr, lambda)
-      case "l1" => l1penalty(lr, lambda)
-      case _ => //do nothing
-    }
+  def penaltyNorm = penalty.toLowerCase match {
+    case "l1" => L1NormFunction
+    case "l2" => L2NormFunction
+    case _ => DefaultNormFunction
   }
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
@@ -163,18 +117,13 @@ class BaseSGD(var eta: Double, //学习速率
 
           val y_format = format_y(y(i), loss)
 
-          var dloss = loss.dLoss(y_pred, y_format)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _weight, loss,  penaltyNorm, lambda)
+          val grad = autoGrad.grad
 
-          dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-          else if (dloss > MAX_DLOSS) MAX_DLOSS
-          else dloss
+          _weight -= eta * grad
 
-          val update = -eta * dloss
-          doPenalty(penalty, eta, lambda)
-
-          _weight += ele * update
-
-          totalLoss += loss.loss(ele.dot(_weight), y_format)
+          autoGrad.updateTheta(_weight)
+          totalLoss += autoGrad.loss
         }
         val avg_loss = totalLoss / x.rows
 
@@ -229,71 +178,40 @@ class BaseMSGD(var eta: Double, //学习速率
     }
   }
 
-  // Performs L2 regularization scaling
-  def l2penalty(lr: Double, lambda: Double): Unit = {
-    if (lr >= MIN_LR_EPS) _weight *= (1 - Math.max(0, lambda * lr))
+  def penaltyNorm = penalty.toLowerCase match {
+    case "l1" => L1NormFunction
+    case "l2" => L2NormFunction
+    case _ => DefaultNormFunction
   }
 
-  // Performs L1 regularization scaling
-  def l1penalty(lr: Double, lambda: Double): Unit = {
-    if (lr >= MIN_LR_EPS) {
-      val l1_g = _weight.map(signum)
-      _weight -= lr * lambda * l1_g
-    }
-  }
-
-  def doPenalty(penalty: String, lr: Double, lambda: Double): Unit = {
-    penalty match {
-      case "l2" => l2penalty(lr, lambda)
-      case "l1" => l1penalty(lr, lambda)
-      case _ => //do nothing
-    }
-  }
-
-  override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
-    assert(X.rows == y.size)
+  override def fit(X: Matrix[Double], Y: Seq[Double]): Optimizer = {
+    assert(X.rows == Y.size)
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
+    val y = format_y(DenseMatrix.create(Y.size, 1, Y.toArray), loss)
+    var theta = DenseMatrix.ones[Double](x.cols, 1)
 
     breakable {
       var last_avg_loss = Double.MaxValue
 
       for (epoch <- 1 to iterNum) {
 
-        var totalLoss: Double = 0
-        val batch_data = get_minibatch(x, y, batch)
+        val batch_data = get_minibatch(x, y.toArray)
+
         for ((sub_x, sub_y) <- batch_data.asInstanceOf[Seq[(DenseMatrix[Double], Seq[Double])]]) {
-          val delta_w = DenseVector.zeros[Double](x.cols)
-          for (i <- 0 until sub_x.rows) {
-            val ele = sub_x(i, ::).t
-            val y_pred: Double = ele.dot(_weight)
 
-            val y_format = format_y(y(i), loss)
-
-            var dloss = loss.dLoss(y_pred, y_format)
-
-            dloss = if (dloss < -MAX_DLOSS) -MAX_DLOSS
-            else if (dloss > MAX_DLOSS) MAX_DLOSS
-            else dloss
-
-            val update = -dloss
-            delta_w += ele * update
-
-            totalLoss += loss.loss(ele.dot(_weight), y_format)
-          }
-
-          doPenalty(penalty, eta, lambda)
-          _weight += (delta_w * (1.0 / sub_x.rows) * eta)
+          val subAutoGrad = new AutoGrad(sub_x, DenseMatrix(sub_y).reshape(sub_y.length, 1), theta, loss, penaltyNorm, lambda)
+          theta -= eta * subAutoGrad.avgGrad
+          subAutoGrad.updateTheta(theta)
+          _weight = theta.toDenseVector
         }
 
-        val avg_loss = totalLoss / x.rows
-
-
-
+        val autoGrad = new AutoGrad(x, y, theta, loss, penaltyNorm, lambda)
+        val avg_loss = autoGrad.avgLoss
         if (verbose) {
           if (epoch % print_period == 0 || epoch == iterNum) {
-            val acc = ClassificationMetrics.accuracy_score(predict(X), y)
+            val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
             log_print(epoch, acc, avg_loss)
           }
         }
@@ -301,7 +219,7 @@ class BaseMSGD(var eta: Double, //学习速率
         val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS
         if (converged) {
           println(s"converged at iter $epoch!")
-          val acc = ClassificationMetrics.accuracy_score(predict(X), y)
+          val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
           log_print(epoch, acc, avg_loss)
           break
         }
