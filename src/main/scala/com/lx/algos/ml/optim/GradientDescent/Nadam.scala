@@ -1,7 +1,7 @@
 package com.lx.algos.ml.optim.GradientDescent
 
-import breeze.linalg.{DenseVector, Matrix, max}
-import breeze.numerics.sqrt
+import breeze.linalg.{DenseVector, Matrix}
+import breeze.numerics.{pow, sqrt}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
 import com.lx.algos.ml.utils.SimpleAutoGrad
@@ -11,40 +11,24 @@ import scala.util.control.Breaks.{break, breakable}
 /**
   *
   * @project scalaML
-  * @author lx on 10:05 PM 21/11/2017
+  * @author lx on 3:09 PM 26/12/2017
   */
 
-//see <https://github.com/keras-team/keras/blob/master/keras/optimizers.py>
-class Adam extends AdaGrad {
-  override protected def init_param(): Adam = {
+class Nadam extends Adam {
 
+  override protected def init_param() = {
     super.init_param()
 
     setParams(Seq(
-      "eta" -> 0.002, //梯度累加信息的衰减指数
-      "beta1" -> 0.9,
-      "beta2" -> 0.999,
-      "amsgrad" -> false
+      "beta1" -> 0.99
     ))
 
     this
   }
 
-  init_param()
+  init_param
 
-  var t: Int = 0 //已迭代次数
-
-  def amsgrad: Boolean = getParam[Boolean]("amsgrad")
-
-  def set_amsgrad(amsGrad: Boolean) = setParam[Boolean]("amsgrad", amsGrad)
-
-  def beta1 = getParam[Double]("beta1")
-
-  def set_beta1(beta1: Double) = setParam[Double]("beta1", beta1)
-
-  def beta2 = getParam[Double]("beta2")
-
-  def set_beta2(beta1: Double) = setParam[Double]("beta2", beta2)
+  def moment_schedule(time: Int = t): Double = (1 - 0.5 * pow(0.96, time / 250.0)) * beta1
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
@@ -56,7 +40,7 @@ class Adam extends AdaGrad {
       var last_avg_loss = Double.MaxValue
       var cache_moment1 = DenseVector.zeros[Double](x.cols) //一阶梯度累加
       var cache_moment2 = DenseVector.zeros[Double](x.cols) //二阶梯度累加
-      var max_moment2 = DenseVector.zeros[Double](x.cols)
+      var moment_schedule_sum = 0.0
 
       for (epoch <- 1 to iterNum) {
 
@@ -64,6 +48,10 @@ class Adam extends AdaGrad {
 
         for (i <- 0 until x.rows) {
           t += 1
+
+          val cache_scheduler_t = moment_schedule(t)
+          val cache_scheduler_t_1 = moment_schedule(t + 1)
+          moment_schedule_sum *= cache_scheduler_t
           val ele = x(i, ::).t
           val y_pred: Double = ele.dot(_theta.toDenseVector)
 
@@ -73,22 +61,18 @@ class Adam extends AdaGrad {
 
           val grad = autoGrad.grad
 
+          val real_grad = grad / (1 - moment_schedule_sum)
+
           cache_moment1 = beta1 * cache_moment1 + (1 - beta1) * grad
           cache_moment2 = beta2 * cache_moment2 + (1 - beta2) * grad *:* grad
 
+          val bias_moment1 = cache_moment1 / (1 - moment_schedule_sum * cache_scheduler_t_1)
+          val bias_moment2 = cache_moment2 / (1 - Math.pow(beta2, t))
 
-          val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, t))
+          val avg_cache_moment1 = (1 - cache_scheduler_t) * real_grad + cache_scheduler_t_1 * bias_moment1
 
-          val bias_moment2 = {
-            if (amsgrad) {
-              max_moment2 = max(cache_moment2, max_moment2)
-              max_moment2
-            } else {
-              cache_moment2
-            }
-          } / (1 - Math.pow(beta2, t))
 
-          _theta += (-eta * bias_moment1 / (sqrt(bias_moment2) + eps)).toDenseMatrix.reshape(_theta.rows, 1)
+          _theta += (-eta * avg_cache_moment1 / (sqrt(bias_moment2) + eps)).toDenseMatrix.reshape(_theta.rows, 1)
 
           autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.loss
@@ -116,5 +100,4 @@ class Adam extends AdaGrad {
 
     this
   }
-
 }

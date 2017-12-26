@@ -22,7 +22,7 @@ class SGD extends Optimizer with Param {
 
   protected def init_param(): SGD = {
     setParams(Seq(
-      "eta" -> 0.01, //learning_rate
+      "eta" -> 0.001, //learning_rate，一般建议设置小点
       "lambda" -> 0.15, // 正则化权重,weigjht decay
       "gamma" -> 0.9, //动量参数
       "nesterov" -> false, // NAG支持，改良版，需要配合gamma参数,该部分实现应用了armijo准则
@@ -130,16 +130,20 @@ class SGD extends Optimizer with Param {
           val y_format = format_y(y(i), loss)
 
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss, penaltyNorm, lambda)
           val grad = autoGrad.grad
 
           if (nesterov) {
+            //see <https://zhuanlan.zhihu.com/p/20190387>
             //nestrov momentum update, origin paper version
-            //            velocity  = velocity * gamma + grad + (grad - last_grad) * gamma
+            val new_velocity = gamma * velocity - eta * grad
+            val delta = (gamma * gamma * velocity - (1 + gamma) * eta * grad).toDenseMatrix.reshape(_theta.rows, 1)
+            velocity = new_velocity
+            _theta += delta
 
-            //pytorch version, really fast
-            velocity = velocity * gamma + grad
-            _theta += (-eta * velocity).toDenseMatrix.reshape(_theta.rows, 1)
+            //pytorch version, really fast. see <https://www.aiboy.pub/2017/09/10/A_Brief_Of_Optimization_Algorithms>
+//                        velocity = velocity * gamma + grad
+//                        _theta += (-eta * velocity).toDenseMatrix.reshape(_theta.rows, 1)
           } else {
             //momentum update
             velocity = gamma * velocity + grad * eta

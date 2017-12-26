@@ -3,16 +3,17 @@
 Implement some ML algorithms in scala. 
 
 1.  base bgd, sgd, mbgd to get started.
-2.  Frequently-used SGD algos： 
+2.  Frequently-used GD algos： 
     -   SGD with momentum and NAG
     -   AdaGrad
     -   AdaDelta
     -   RMSProp
-    -   Adam/AdaMax
+    -   Adam/AdaMax/Nadam
     -   FTRL_Proximal(online learning)
+3.  Quasi-Newton Methods
     -   DFP with golden section method
     -   BFGS with golden section method
-3.  common loss function.
+4.  common loss function for binary classification.
 
 
 **note**: 

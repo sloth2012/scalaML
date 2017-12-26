@@ -24,7 +24,7 @@ class GradientDescentTest extends FlatSpec {
     sgd.set_verbose(true)
       .set_printPeriod(1)
       .set_eta(0.01)
-      //            .set_penalty("l1")
+      .set_penalty("l2")
       .set_nesterov(true)
 
     sgd.fit(x, y.toArray.toSeq)
@@ -68,7 +68,8 @@ class GradientDescentTest extends FlatSpec {
   {
     val adam = new Adam
     println(s"this is ${adam.getClass.getSimpleName} running!")
-    adam.set_verbose(true)
+    adam.set_amsgrad(true)
+        .set_verbose(true)
       .set_printPeriod(1)
       .set_gamma(0.9)
       .fit(x, y.toArray.toSeq)
@@ -86,4 +87,15 @@ class GradientDescentTest extends FlatSpec {
 
     println(adamax.weight)
   }
+
+    {
+      val nadam = new AdaMax
+      println(s"this is ${nadam.getClass.getSimpleName} running!")
+      nadam.set_verbose(true)
+        .set_printPeriod(1)
+        .set_gamma(0.9)
+        .fit(x, y.toArray.toSeq)
+
+      println(nadam.weight)
+    }
 }
