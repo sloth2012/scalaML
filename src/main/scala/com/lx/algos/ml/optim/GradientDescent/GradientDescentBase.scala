@@ -12,8 +12,8 @@ import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import com.lx.algos.ml.loss.LossFunction
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
-import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, SimpleAutoGrad}
+import com.lx.algos.ml.optim.{AutoGrad, Optimizer, SimpleAutoGrad}
+import com.lx.algos.ml.utils.MatrixTools
 
 import scala.util.control.Breaks._
 

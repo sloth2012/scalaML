@@ -1,7 +1,7 @@
 package com.lx.algos.ml.loss
 
 import breeze.linalg.DenseMatrix
-import com.lx.algos.ml.utils.BaseGradFunction
+import com.lx.algos.ml.optim.BaseGradFunction
 
 /**
   *

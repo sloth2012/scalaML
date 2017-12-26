@@ -5,8 +5,7 @@ import breeze.numerics.{abs, sqrt}
 import com.lx.algos.ml.MAX_DLOSS
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
-import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.SimpleAutoGrad
+import com.lx.algos.ml.optim.{Optimizer, SimpleAutoGrad}
 
 import scala.util.control.Breaks.{break, breakable}
 

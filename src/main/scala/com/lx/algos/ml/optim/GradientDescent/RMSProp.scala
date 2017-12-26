@@ -3,8 +3,7 @@ package com.lx.algos.ml.optim.GradientDescent
 import breeze.linalg.{DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.metrics.ClassificationMetrics
-import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.SimpleAutoGrad
+import com.lx.algos.ml.optim.{Optimizer, SimpleAutoGrad}
 
 import scala.util.control.Breaks.{break, breakable}
 

@@ -1,12 +1,11 @@
 package com.lx.algos.ml.optim.GradientDescent
 
 import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
-import com.lx.algos.ml._
 import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
-import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{MatrixTools, Param, SimpleAutoGrad}
+import com.lx.algos.ml.optim.{Optimizer, SimpleAutoGrad}
+import com.lx.algos.ml.utils.{MatrixTools, Param}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}

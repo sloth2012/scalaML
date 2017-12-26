@@ -6,7 +6,6 @@ import com.lx.algos.ml.loss.LossFunction
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
 import com.lx.algos.ml.utils.Param
-import com.lx.algos.ml._
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.breakable

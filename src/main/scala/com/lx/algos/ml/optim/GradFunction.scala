@@ -1,4 +1,4 @@
-package com.lx.algos.ml.utils
+package com.lx.algos.ml.optim
 
 import breeze.linalg.{DenseMatrix, DenseVector, norm, sum}
 import com.lx.algos.ml.loss.LossFunction
