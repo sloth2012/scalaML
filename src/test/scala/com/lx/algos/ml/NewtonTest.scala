@@ -22,6 +22,7 @@ class NewtonTest extends FlatSpec {
     model.set_penalty("l2")
       .set_verbose(true)
       .set_lambda(0.1)
+        .set_printPeriod(1)
       .set_loss(new SquaredHingeLoss)
       .fit(new_x, new_y)
 
@@ -34,6 +35,7 @@ class NewtonTest extends FlatSpec {
     println(s"this is ${model.getClass.getSimpleName} running!")
     model.set_penalty("l2")
       .set_verbose(true)
+      .set_printPeriod(1)
       .set_lambda(0.1)
       .set_loss(new HingeLoss)
       .fit(new_x, new_y)

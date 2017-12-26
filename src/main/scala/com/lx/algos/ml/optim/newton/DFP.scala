@@ -82,6 +82,8 @@ class DFP extends Optimizer with Param {
 
   private val MIN_ALPHA_LOSS_EPS = 0.01
 
+  private val MIN_DK_EPS = 0.4
+
   //hessian矩阵
   private var Hessian: DenseMatrix[Double] = null
 
@@ -110,11 +112,12 @@ class DFP extends Optimizer with Param {
     var Dk = -Gradient //n * 1
 
     breakable {
+      var converged = false
       for (epoch <- 1 to iterNum) {
-        if (sum(abs(Dk)) <= MIN_LOSS) {
-          println(s"converged at iter $epoch!")
+        if (sum(abs(Dk)) <= MIN_DK_EPS || converged) {
+          println(s"converged at iter ${epoch-1}!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
-          log_print(epoch, acc, J)
+          log_print(epoch-1, acc, J)
           break
         }
 
@@ -197,19 +200,19 @@ class DFP extends Optimizer with Param {
 //        println(s"optimal alpha in epoch $epoch is $alpha")
 
         val theta_old = _theta
-        val grad_old = - autoGrad.updateTheta(theta_old).avgGrad
+        val grad_old = autoGrad.updateTheta(theta_old).avgGrad
         _theta = _theta + alpha * Dk
 
         //update the Hessian matrix
 
-        J = autoGrad.updateTheta(_theta).avgLoss
+        val new_J = autoGrad.updateTheta(_theta).avgLoss
 
         //here to estimate Hessian'inv
         //sk = ThetaNew - ThetaOld = alpha * inv(H) * Gradient
         val sk = _theta - theta_old
         //yk = GradNew - GradOld
         //the grad is average value
-        val grad = - autoGrad.avgGrad
+        val grad = autoGrad.avgGrad
         val yk = grad - grad_old reshape(x.cols, 1)
 
         //z1 = (sk' * yk) # a value
@@ -231,12 +234,17 @@ class DFP extends Optimizer with Param {
           Hessian += DHessian
           Dk = -Hessian * grad.reshape(x.cols, 1)
         }
+
         if (verbose) {
           if (epoch % printPeriod == 0 || epoch == iterNum) {
             val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
             log_print(epoch, acc, J)
           }
         }
+
+        converged = Math.abs(new_J - J) < MIN_LOSS
+
+        J = new_J
 
       }
 

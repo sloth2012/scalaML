@@ -1,10 +1,7 @@
 package com.lx.algos.ml
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import com.lx.algos.ml.utils.MatrixTools
 import com.mattg.util.FileUtil
-
-import scala.io.Source
 /**
   *
   * @project scalaML

@@ -107,11 +107,12 @@ class BFGS extends Optimizer with Param {
     var Dk = -Gradient //n * 1
 
     breakable {
+      var converged = false
       for (epoch <- 1 to iterNum) {
-        if (sum(abs(Dk)) <= MIN_LOSS) {
-          println(s"converged at iter $epoch!")
+        if (sum(abs(Dk)) <= MIN_LOSS || converged) {
+          println(s"converged at iter ${epoch-1}!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
-          log_print(epoch, acc, J)
+          log_print(epoch-1, acc, J)
           break
         }
 
@@ -194,26 +195,27 @@ class BFGS extends Optimizer with Param {
         //        println(s"optimal alpha in epoch $epoch is $alpha")
 
         val theta_old = _theta
-        val grad_old = -autoGrad.updateTheta(theta_old).avgGrad
+        val grad_old = autoGrad.updateTheta(theta_old).avgGrad
         _theta = _theta + alpha * Dk
 
         //update the Hessian matrix
 
-        J = autoGrad.updateTheta(_theta).avgLoss
+        val new_J = autoGrad.updateTheta(_theta).avgLoss
 
         //here to estimate Hessian'inv
         //sk = ThetaNew - ThetaOld = alpha * inv(H) * Gradient
         val sk = _theta - theta_old // shape=n*1
         //yk = GradNew - GradOld
         //the grad is average value
-        val grad = -autoGrad.avgGrad
+        val grad = autoGrad.avgGrad
         val yk = grad - grad_old reshape(x.cols, 1) // shape=n*1
 
         //z1 = (yk' * sk) # a value
         val z1 = (yk.t * sk).data(0)
 
+
         //修正正定
-        if (z1 > MIN_POS_EPS) {
+        if (z1 > 0) {
 
           //z2 = (sk * sk') # a matrix
           val z2 = sk * sk.t
@@ -234,6 +236,10 @@ class BFGS extends Optimizer with Param {
             log_print(epoch, acc, J)
           }
         }
+
+        converged = Math.abs(new_J - J) < MIN_LOSS
+
+        J = new_J
 
       }
 
