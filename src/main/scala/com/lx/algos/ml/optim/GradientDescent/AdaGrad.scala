@@ -5,7 +5,7 @@ import breeze.numerics.sqrt
 import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{MatrixTools, Param, SimpleAutoGrad}
+import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param, SimpleAutoGrad}
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 
 import scala.reflect.ClassTag
@@ -30,7 +30,7 @@ class AdaGrad extends Optimizer with Param {
       "penalty" -> "l2", //正则化系数，暂只实现l2
       "iterNum" -> 1000, //迭代轮数
       "loss" -> new LogLoss,
-      "batchSize" -> 128 //minibatch size，一个batc多少样本
+      "batchSize" -> 128 //minibatch size，一个batch多少样本
     ))
 
     this
@@ -98,52 +98,37 @@ class AdaGrad extends Optimizer with Param {
   def set_lambda(lambda: Double) = setParam[Double]("lambda", lambda)
 
 
-  //TODO minibatch update
-  def get_minibzatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
-
-    assert(X.rows == y.size)
-    if (batchSize >= y.size) Seq((X, y))
-    else {
-      val (new_X, new_y) = MatrixTools.shuffle(X, y)
-      MatrixTools.vsplit(new_X, new_y, batchSize)
-    }
-  }
-
-
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
+    val y_format = format_y(DenseMatrix(y).reshape(y.size, 1), loss)
 
 
     breakable {
       var last_avg_loss = Double.MaxValue
-      var cache_grad = DenseVector.zeros[Double](x.cols)
-      for (epoch <- 1 to iterNum) {
+      var cache_grad = DenseMatrix.zeros[Double](x.cols, 1)
 
+      for (epoch <- 1 to iterNum) {
         var totalLoss: Double = 0
 
-        for (i <- 0 until x.rows) {
-          val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_theta.toDenseVector)
+        val batch_data: Seq[(DenseMatrix[Double], DenseMatrix[Double])] = get_minibatch(x, y_format, batchSize)
 
-          val y_format = format_y(y(i), loss)
+        for ((sub_x, sub_y) <- batch_data) {
+          val autoGrad = new AutoGrad(sub_x, sub_y, _theta, loss, penaltyNorm, lambda)
+          val grad = autoGrad.avgGrad //n*1 matrix
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss, penaltyNorm, lambda)
-          val grad = autoGrad.grad
-          cache_grad += grad *:* grad
+          cache_grad = grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
-
-          _theta += (-lr_grad *:* grad).toDenseMatrix.reshape(_theta.rows, 1)
+          _theta -= lr_grad *:* grad
 
           autoGrad.updateTheta(_theta)
-          totalLoss += autoGrad.loss
+          totalLoss += autoGrad.totalLoss
         }
+
         val avg_loss = totalLoss / x.rows
-
         val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS
-
         if (verbose) {
           if (epoch % printPeriod == 0 || epoch == iterNum) {
             val acc = ClassificationMetrics.accuracy_score(predict(X), y)

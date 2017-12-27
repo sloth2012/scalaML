@@ -1,10 +1,10 @@
 package com.lx.algos.ml.optim.GradientDescent
 
-import breeze.linalg.{DenseVector, Matrix}
+import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.SimpleAutoGrad
+import com.lx.algos.ml.utils.{AutoGrad, SimpleAutoGrad}
 
 import scala.util.control.Breaks.{break, breakable}
 
@@ -36,31 +36,27 @@ class RMSProp extends AdaGrad {
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
+    val y_format = format_y(DenseMatrix(y).reshape(y.size, 1), loss)
 
     breakable {
       var last_avg_loss = Double.MaxValue
-      var cache_grad = DenseVector.zeros[Double](x.cols)
+      var cache_grad = DenseMatrix.zeros[Double](x.cols, 1)
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
-
-        for (i <- 0 until x.rows) {
-          val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_theta.toDenseVector)
-
-          val y_format = format_y(y(i), loss)
-
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
-          val grad = autoGrad.grad
-
+        val batch_data: Seq[(DenseMatrix[Double], DenseMatrix[Double])] = get_minibatch(x, y_format, batchSize)
+        for ((sub_x, sub_y) <- batch_data) {
+          val autoGrad = new AutoGrad(sub_x, sub_y, _theta, loss, penaltyNorm, lambda)
+          val grad = autoGrad.avgGrad //n*1 matrix
           cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
 
-          _theta += (-lr_grad *:* grad).toDenseMatrix.reshape(_theta.rows, 1)
+          _theta -= lr_grad *:* grad
 
           autoGrad.updateTheta(_theta)
-          totalLoss += autoGrad.loss
+          totalLoss += autoGrad.totalLoss
         }
+
         val avg_loss = totalLoss / x.rows
 
         val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS

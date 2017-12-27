@@ -37,6 +37,20 @@ object MatrixTools {
     }
   }
 
+  def vsplit[T: ClassTag](X: DenseMatrix[T], y: DenseMatrix[T], batch: Int): Seq[(DenseMatrix[T], DenseMatrix[T])] = {
+
+    val batch_num = if (X.rows % batch == 0) X.rows / batch else X.rows / batch + 1
+
+    0 until batch_num map {
+      i => {
+        val start_index = i * batch
+        val end_index = Math.min(X.rows, (i + 1) * batch)
+
+        (X(start_index until end_index, ::), y(start_index until end_index, ::))
+      }
+    }
+  }
+
   def shuffle[T: ClassTag](X: DenseMatrix[T], y: Seq[T]): (DenseMatrix[T], Seq[T]) = {
     val index = sys_shuffle(0 until y.size toList)
 
@@ -55,4 +69,34 @@ object MatrixTools {
     (new_X, new_y)
   }
 
+
+  def shuffle[T: ClassTag](X: DenseMatrix[T], y: DenseMatrix[T]): (DenseMatrix[T], DenseMatrix[T]) = {
+    val index = sys_shuffle(0 until y.size toList)
+
+
+    val values_f = (m: DenseMatrix[T]) => index flatMap {
+      i => m(i, ::).t.toArray
+    } toArray
+
+    val new_X: DenseMatrix[T] = new DenseMatrix(X.cols, X.rows, values_f(X)).t //DenseMatrix是以row为偏移构建矩阵的，因此这里需要从列开始
+
+
+    val new_y: DenseMatrix[T] = new DenseMatrix(y.size, 1, values_f(y))
+
+    (new_X, new_y)
+  }
+
+  def shuffle[T: ClassTag](X: DenseMatrix[T]): DenseMatrix[T] = {
+    val index = sys_shuffle(0 until X.rows toList)
+
+
+    val values = index flatMap {
+      i => X(i, ::).t.toArray
+    } toArray
+
+    val new_X: DenseMatrix[T] = new DenseMatrix(X.cols, X.rows, values).t //DenseMatrix是以row为偏移构建矩阵的，因此这里需要从列开始
+
+
+    new_X
+  }
 }

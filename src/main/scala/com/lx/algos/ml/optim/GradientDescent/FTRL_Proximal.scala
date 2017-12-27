@@ -55,7 +55,6 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
   //weights
 
   def update(x: DenseVector[Double], p: Double, y: Double): FTRL_Proximal = {
-
     val grad = loss.dLoss(p, y) * x
 
     val square_grad = grad *:* grad

@@ -39,7 +39,9 @@ class AutoGrad(
 
   def loss: DenseMatrix[Double] = lossFunction.loss(value, y) + lambda * regular_value
 
-  def avgLoss: Double = sum(loss) / x.rows
+  def avgLoss: Double = totalLoss / x.rows
+
+  def totalLoss: Double = sum(loss)
 
   def updateTheta(newTheta: DenseMatrix[Double]): AutoGrad = {
     assert(newTheta.cols == theta.cols && newTheta.rows == theta.rows)

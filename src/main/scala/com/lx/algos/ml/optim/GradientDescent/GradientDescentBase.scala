@@ -2,7 +2,7 @@
 package com.lx.algos.ml.optim.GradientDescent
 
 /**
-  *
+  * 该页代码是最初学习的实现，方便入门，现做保留备份
   * @project scalaML
   * @author lx on 4:57 PM 16/11/2017
   */
@@ -161,20 +161,10 @@ class BaseMSGD(var eta: Double, //学习速率
                loss: LossFunction, //损失函数
                iterNum: Int = 1000, //迭代次数
                penalty: String = "l2",
-               batch: Int = 5000, //一个batch样本数
+               batch: Int = 2000, //一个batch样本数
                verbose: Boolean = false,
                print_period: Int = 100 //打印周期
               ) extends Optimizer {
-  def get_minibatch(X: DenseMatrix[Double], y: Seq[Double], minibatch_size: Int = batch): Seq[(DenseMatrix[Double], Seq[Double])] = {
-
-    assert(X.rows == y.size)
-    if (minibatch_size >= y.size) Seq((X, y))
-    else {
-      val (new_X, new_y) = MatrixTools.shuffle(X, y)
-
-      MatrixTools.vsplit(new_X, new_y, minibatch_size)
-    }
-  }
 
   def penaltyNorm = penalty.toLowerCase match {
     case "l1" => L1NormFunction
@@ -194,7 +184,7 @@ class BaseMSGD(var eta: Double, //学习速率
 
       for (epoch <- 1 to iterNum) {
 
-        val batch_data = get_minibatch(x, y.toArray)
+        val batch_data = get_minibatch(x, y.toArray, batch)
 
         for ((sub_x, sub_y) <- batch_data.asInstanceOf[Seq[(DenseMatrix[Double], Seq[Double])]]) {
 

@@ -5,7 +5,7 @@ import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{MatrixTools, Param, SimpleAutoGrad}
+import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param, SimpleAutoGrad}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}
@@ -32,7 +32,7 @@ class SGD extends Optimizer with Param {
       "penalty" -> "l2", //正则化系数，暂只实现l2
       "iterNum" -> 1000, //迭代轮数
       "loss" -> new LogLoss,
-      "batchSize" -> 128 //minibatch size，一个batc多少样本
+      "batchSize" -> 128 //minibatch size，一个batch多少样本
     ))
 
     this
@@ -49,7 +49,7 @@ class SGD extends Optimizer with Param {
     this
   }
 
-  init_param()
+  init_param
 
   def penaltyNorm = penalty.toLowerCase match {
     case "l1" => L1NormFunction
@@ -101,63 +101,49 @@ class SGD extends Optimizer with Param {
 
   def set_nesterov(nesterov: Boolean) = setParam[Boolean]("nesterov", nesterov)
 
-  //TODO minibatch update
-  def get_minibatch(X: DenseMatrix[Double], y: Seq[Double]): Seq[(DenseMatrix[Double], Seq[Double])] = {
-
-    assert(X.rows == y.size)
-    if (batchSize >= y.size) Seq((X, y))
-    else {
-      val (new_X, new_y) = MatrixTools.shuffle(X, y)
-      MatrixTools.vsplit(new_X, new_y, batchSize)
-    }
-  }
-
-
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
-    var velocity = DenseVector.zeros[Double](x.cols)
+    val y_format = format_y(DenseMatrix(y).reshape(y.size, 1), loss)
 
     breakable {
+      var velocity = DenseMatrix.zeros[Double](x.cols, 1)
       var last_avg_loss = Double.MaxValue
-      var last_grad = DenseVector.zeros[Double](x.cols)
+      var last_grad = DenseMatrix.zeros[Double](x.cols, 1)
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
 
-        for (i <- 0 until x.rows) {
-          val ele = x(i, ::).t
-          val y_pred: Double = ele.dot(_theta.toDenseVector)
+        val batch_data: Seq[(DenseMatrix[Double], DenseMatrix[Double])] = get_minibatch(x, y_format, batchSize)
 
-          val y_format = format_y(y(i), loss)
-
-
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss, penaltyNorm, lambda)
-          val grad = autoGrad.grad
+        for ((sub_x, sub_y) <- batch_data) {
+          val autoGrad = new AutoGrad(sub_x, sub_y, _theta, loss, penaltyNorm, lambda)
+          val grad = autoGrad.avgGrad //n*1 matrix
 
           if (nesterov) {
             //see <https://zhuanlan.zhihu.com/p/20190387>
             //nestrov momentum update, origin paper version
             val new_velocity = gamma * velocity - eta * grad
-            val delta = (gamma * gamma * velocity - (1 + gamma) * eta * grad).toDenseMatrix.reshape(_theta.rows, 1)
+            val delta = gamma * gamma * velocity - (1 + gamma) * eta * grad
             velocity = new_velocity
             _theta += delta
 
             //pytorch version, really fast. see <https://www.aiboy.pub/2017/09/10/A_Brief_Of_Optimization_Algorithms>
-//                        velocity = velocity * gamma + grad
-//                        _theta += (-eta * velocity).toDenseMatrix.reshape(_theta.rows, 1)
+            //                        velocity = velocity * gamma + grad
+            //                        _theta += (-eta * velocity).toDenseMatrix.reshape(_theta.rows, 1)
           } else {
             //momentum update
             velocity = gamma * velocity + grad * eta
-            _theta += -velocity.toDenseMatrix.reshape(_theta.rows, 1)
+            _theta += -velocity
           }
 
           autoGrad.updateTheta(_theta)
-          totalLoss += autoGrad.loss
+          totalLoss += autoGrad.totalLoss
           last_grad = grad
         }
+
         val avg_loss = totalLoss / x.rows
 
         val converged = Math.abs(avg_loss - last_avg_loss) < MIN_LOSS

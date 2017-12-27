@@ -22,10 +22,11 @@ class GradientDescentTest extends FlatSpec {
     val sgd = new SGD
     println(s"this is ${sgd.getClass.getSimpleName} running!")
     sgd.set_verbose(true)
+      .set_batchSize(128)
       .set_printPeriod(1)
       .set_eta(0.01)
       .set_penalty("l2")
-    //      .set_nesterov(true)
+      .set_nesterov(true)
 
     sgd.fit(x, y.toArray.toSeq)
     println(sgd.weight)
@@ -35,8 +36,9 @@ class GradientDescentTest extends FlatSpec {
     val adagrad = new AdaGrad
     println(s"this is ${adagrad.getClass.getSimpleName} running!")
     adagrad.set_verbose(true)
-      .set_printPeriod(10)
+      .set_printPeriod(1)
       .set_eta(0.01)
+    //        .set_early_stop(false)
     //      .set_penalty("l2")
 
     adagrad.fit(x, y.toArray.toSeq)
@@ -88,11 +90,11 @@ class GradientDescentTest extends FlatSpec {
   }
 
   {
-    val nadam = new AdaMax
+    val nadam = new Nadam
     println(s"this is ${nadam.getClass.getSimpleName} running!")
     nadam.set_verbose(true)
       .set_printPeriod(1)
-      .set_penalty("l1")
+      .set_penalty("l2")
       .fit(x, y.toArray.toSeq)
 
     println(nadam.weight)
@@ -101,9 +103,10 @@ class GradientDescentTest extends FlatSpec {
   {
     val swats = new SWATS
     println(s"this is ${swats.getClass.getSimpleName} running!")
-    swats.set_lr_decay_ratio(0.2)
+    swats.set_lr_decay_ratio(0.02)
       .set_early_stop(false)
       .set_verbose(true)
+      .set_iterNum(5000)
       .set_printPeriod(10)
       .set_penalty("l2")
       .fit(x, y.toArray.toSeq)
