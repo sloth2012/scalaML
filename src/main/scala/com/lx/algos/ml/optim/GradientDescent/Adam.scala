@@ -32,7 +32,7 @@ class Adam extends AdaGrad {
 
   init_param()
 
-  var t: Int = 0 //已迭代次数
+  protected var t: Int = 0 //已进行次数
 
   def amsgrad: Boolean = getParam[Boolean]("amsgrad")
 
@@ -103,7 +103,7 @@ class Adam extends AdaGrad {
             log_print(epoch, acc, avg_loss)
           }
         }
-        if (converged) {
+        if (converged && early_stop) {
           println(s"converged at iter $epoch!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
           log_print(epoch, acc, avg_loss)

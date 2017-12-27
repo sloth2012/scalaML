@@ -75,7 +75,9 @@ class AdaGrad extends Optimizer with Param {
 
   def gamma = getParam[Double]("gamma")
 
+  def early_stop: Boolean = getParam[Boolean]("early_stop", true)
 
+  def set_early_stop(early_stop: Boolean) = setParam[Boolean]("early_stop", early_stop)
 
   def set_gamma(gamma: Double) = setParam[Double]("gamma", gamma)
 
@@ -128,7 +130,7 @@ class AdaGrad extends Optimizer with Param {
 
           val y_format = format_y(y(i), loss)
 
-          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss,  penaltyNorm, lambda)
+          val autoGrad = new SimpleAutoGrad(ele, y_format, _theta, loss, penaltyNorm, lambda)
           val grad = autoGrad.grad
           cache_grad += grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
@@ -148,7 +150,7 @@ class AdaGrad extends Optimizer with Param {
             log_print(epoch, acc, avg_loss)
           }
         }
-        if (converged) {
+        if (converged && early_stop) {
           println(s"converged at iter $epoch!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
           log_print(epoch, acc, avg_loss)

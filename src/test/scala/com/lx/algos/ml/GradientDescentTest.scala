@@ -25,7 +25,7 @@ class GradientDescentTest extends FlatSpec {
       .set_printPeriod(1)
       .set_eta(0.01)
       .set_penalty("l2")
-      .set_nesterov(true)
+    //      .set_nesterov(true)
 
     sgd.fit(x, y.toArray.toSeq)
     println(sgd.weight)
@@ -92,8 +92,22 @@ class GradientDescentTest extends FlatSpec {
     println(s"this is ${nadam.getClass.getSimpleName} running!")
     nadam.set_verbose(true)
       .set_printPeriod(1)
+      .set_penalty("l1")
       .fit(x, y.toArray.toSeq)
 
     println(nadam.weight)
+  }
+
+  {
+    val swats = new SWATS
+    println(s"this is ${swats.getClass.getSimpleName} running!")
+    swats.set_lr_decay_ratio(0.2)
+      .set_early_stop(false)
+      .set_verbose(true)
+      .set_printPeriod(10)
+      .set_penalty("l2")
+      .fit(x, y.toArray.toSeq)
+
+    println(swats.weight)
   }
 }

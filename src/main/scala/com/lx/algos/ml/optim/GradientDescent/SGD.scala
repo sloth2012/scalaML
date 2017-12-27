@@ -17,6 +17,7 @@ import scala.util.control.Breaks.{break, breakable}
   */
 
 //随机梯度下降
+//TODO 加入learning rate decay
 class SGD extends Optimizer with Param {
 
 
@@ -76,6 +77,9 @@ class SGD extends Optimizer with Param {
 
   def nesterov = getParam[Boolean]("nesterov")
 
+  def early_stop: Boolean = getParam[Boolean]("early_stop", true)
+
+  def set_early_stop(early_stop: Boolean) = setParam[Boolean]("early_stop", early_stop)
 
   def set_batchSize(batchSize: Int) = setParam[Int]("batchSize", batchSize)
 
@@ -164,7 +168,7 @@ class SGD extends Optimizer with Param {
             log_print(epoch, acc, avg_loss)
           }
         }
-        if (converged) {
+        if (converged && early_stop) {
           println(s"converged at iter $epoch!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
           log_print(epoch, acc, avg_loss)

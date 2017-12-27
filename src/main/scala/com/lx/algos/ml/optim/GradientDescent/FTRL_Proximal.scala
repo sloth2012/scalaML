@@ -65,7 +65,6 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
     this
   }
 
-
   def loss = getParam[LossFunction]("loss")
 
   def set_loss(lossFunction: LossFunction) = setParam[LossFunction]("loss", lossFunction)

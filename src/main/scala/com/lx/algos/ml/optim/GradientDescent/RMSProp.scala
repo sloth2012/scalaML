@@ -71,7 +71,7 @@ class RMSProp extends AdaGrad {
             log_print(epoch, acc, avg_loss)
           }
         }
-        if (converged) {
+        if (converged && early_stop) {
           println(s"converged at iter $epoch!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
           log_print(epoch, acc, avg_loss)
