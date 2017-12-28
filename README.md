@@ -12,6 +12,7 @@ Implement some ML algorithms in scala.
     -   AdaMax
     -   Nadam
     -   FTRL_Proximal(online learning)
+    -   SWATS
 3.  Quasi-Newton Methods
     -   DFP with golden section method
     -   BFGS with golden section method
