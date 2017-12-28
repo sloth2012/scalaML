@@ -16,6 +16,7 @@ Implement some ML algorithms in scala.
 3.  Quasi-Newton Methods
     -   DFP with golden section method
     -   BFGS with golden section method
+    -   CG with Fletcher-Reeves method
 4.  common loss function for binary classification.
 
 

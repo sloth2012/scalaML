@@ -14,12 +14,14 @@ import scala.util.control.Breaks.{break, breakable}
 /**
   *
   * @project scalaML
-  * @author lx on 2:46 PM 25/12/2017
+  * @author lx on 10:24 AM 28/12/2017
   */
 
-class BFGS extends Optimizer with Param {
 
-  protected def init_param(): BFGS = {
+
+//共轭梯度法FR
+class CGFR extends Optimizer with Param{
+  protected def init_param(): CGFR = {
     setParams(Seq(
       "lambda" -> 0.15, // 正则化权重,weigjht decay，未设置时无用
       "verbose" -> false, //打印日志
@@ -32,7 +34,6 @@ class BFGS extends Optimizer with Param {
     this
   }
 
-
   override def setParam[T: ClassTag](name: String, value: T) = {
     super.setParam[T](name, value)
     this
@@ -44,7 +45,6 @@ class BFGS extends Optimizer with Param {
   }
 
   init_param()
-
 
   def loss = getParam[LossFunction]("loss")
 
@@ -72,32 +72,22 @@ class BFGS extends Optimizer with Param {
   def set_lambda(lambda: Double) = setParam[Double]("lambda", lambda)
 
 
-  private val MIN_POS_EPS = 0.0 //正定矩阵的约束，修正版的BFGS使用，主要是发现直接要求正定，效果很差，但确实大部分时候，yk.t*sk的值又非常接近于0，因此做了一个最小阈值
-
-  private val MIN_ALPHA_LOSS_EPS = 0.01
-
-  //hessian矩阵
-  private var Hessian: DenseMatrix[Double] = null
-
   def penaltyNorm = penalty.toLowerCase match {
     case "l1" => L1NormFunction
     case "l2" => L2NormFunction
     case _ => DefaultNormFunction
   }
 
-  // this is python source code: http://dataunion.org/20714.html
-  def fit(X: Matrix[Double], y: Seq[Double]): BFGS = {
+  private val MIN_ALPHA_LOSS_EPS = 0.01
 
-    assert(X.rows == y.size && X.rows > 0)
+  private val MIN_DK_EPS = 0.4
+
+  override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
+    assert(X.rows == y.size)
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
-    val y_format = format_y(DenseMatrix.create(y.size, 1, y.toArray), loss)
-
-    Hessian = DenseMatrix.eye[Double](x.cols)
-
-    //I, 单位矩阵
-    val I = DenseMatrix.eye[Double](x.cols)
+    val y_format = format_y(DenseMatrix(y).reshape(y.size, 1), loss)
 
     val autoGrad = new AutoGrad(x, y_format, _theta, loss, penaltyNorm, lambda)
     var J = autoGrad.avgLoss
@@ -105,11 +95,10 @@ class BFGS extends Optimizer with Param {
     var Gradient = autoGrad.avgGrad
 
     var Dk = -Gradient //n * 1
-
     breakable {
       var converged = false
       for (epoch <- 1 to iterNum) {
-        if (sum(abs(Dk)) <= MIN_LOSS || converged) {
+        if (sum(abs(Dk)) <= MIN_DK_EPS || converged) {
           println(s"converged at iter ${epoch-1}!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
           log_print(epoch-1, acc, J)
@@ -191,45 +180,21 @@ class BFGS extends Optimizer with Param {
             }
           }
         }
-
         //        println(s"optimal alpha in epoch $epoch is $alpha")
 
         val theta_old = _theta
         val grad_old = autoGrad.updateTheta(theta_old).avgGrad
         _theta = _theta + alpha * Dk
+        autoGrad.updateTheta(_theta)
 
-        //update the Hessian matrix
+        val new_Gradient = autoGrad.avgGrad
+        val new_J = autoGrad.avgLoss
+        val beta_k = new_Gradient.t * new_Gradient / (Gradient.t * Gradient)
 
-        val new_J = autoGrad.updateTheta(_theta).avgLoss
+        Dk = -new_Gradient + beta_k.data(0) * Dk
 
-        //here to estimate Hessian'inv
-        //sk = ThetaNew - ThetaOld = alpha * inv(H) * Gradient
-        val sk = _theta - theta_old // shape=n*1
-        //yk = GradNew - GradOld
-        //the grad is average value
-        val grad = autoGrad.avgGrad
-        val yk = grad - grad_old reshape(x.cols, 1) // shape=n*1
+        Gradient = new_Gradient
 
-        //z1 = (yk' * sk) # a value
-        val z1 = (yk.t * sk).data(0)
-
-
-        //修正正定
-        if (z1 > MIN_POS_EPS) {
-
-          //z2 = (sk * sk') # a matrix
-          val z2 = sk * sk.t
-
-          //z3 = sk * yk' # a matrix
-          val z3 = sk * yk.t
-
-          //z4 = yk * sk'
-          val z4 = z3.t
-
-          Hessian = (I - z3 / z1) * Hessian * (I - z4 / z1) + z2 / z1
-
-          Dk = -Hessian * grad.reshape(x.cols, 1)
-        }
         if (verbose) {
           if (epoch % printPeriod == 0 || epoch == iterNum) {
             val acc = ClassificationMetrics.accuracy_score(predict(X), y)
@@ -238,18 +203,16 @@ class BFGS extends Optimizer with Param {
         }
 
         converged = Math.abs(new_J - J) < MIN_LOSS
-
         J = new_J
-
       }
-
     }
+
 
     this
   }
 
-
   override def predict(X: Matrix[Double]): Seq[Double] = super.predict_lr(X)
 
   override def predict_proba(X: Matrix[Double]): Seq[Double] = super.predict_proba_lr(X)
+
 }

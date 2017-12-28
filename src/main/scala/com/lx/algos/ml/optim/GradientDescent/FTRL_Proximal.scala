@@ -121,7 +121,7 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
   }
 
 
-  override def fit(X: Matrix[Double], y: Seq[Double]) = {
+  override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
 
     weight_init(X.cols)

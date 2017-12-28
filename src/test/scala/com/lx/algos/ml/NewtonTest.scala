@@ -1,7 +1,7 @@
 package com.lx.algos.ml
 
 import com.lx.algos.ml.loss.{HingeLoss, SquaredHingeLoss}
-import com.lx.algos.ml.optim.newton.{BFGS, DFP}
+import com.lx.algos.ml.optim.newton.{BFGS, CGFR, DFP}
 import com.lx.algos.ml.utils.MatrixTools
 import org.scalatest.FlatSpec
 
@@ -42,5 +42,19 @@ class NewtonTest extends FlatSpec {
 
     println(model.weight)
   }
+
+  {
+    val model = new CGFR
+    println(s"this is ${model.getClass.getSimpleName} running!")
+    model.set_penalty("l2")
+      .set_verbose(true)
+      .set_printPeriod(1)
+      .set_lambda(0.1)
+      .set_loss(new HingeLoss)
+      .fit(new_x, new_y)
+
+    println(model.weight)
+  }
+
 
 }

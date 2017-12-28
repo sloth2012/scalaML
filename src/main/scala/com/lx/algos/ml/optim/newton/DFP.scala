@@ -94,17 +94,17 @@ class DFP extends Optimizer with Param {
   }
 
   // this is python source code: http://dataunion.org/20714.html
-  def fit(X: Matrix[Double], Y: Seq[Double]): DFP = {
+  def fit(X: Matrix[Double], y: Seq[Double]): DFP = {
 
-    assert(X.rows == Y.size && X.rows > 0)
+    assert(X.rows == y.size && X.rows > 0)
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
-    val y = format_y(DenseMatrix.create(Y.size, 1, Y.toArray), loss)
+    val y_format = format_y(DenseMatrix.create(y.size, 1, y.toArray), loss)
 
     Hessian = DenseMatrix.eye[Double](x.cols)
 
-    val autoGrad = new AutoGrad(x, y, _theta, loss, penaltyNorm, lambda)
+    val autoGrad = new AutoGrad(x, y_format, _theta, loss, penaltyNorm, lambda)
     var J = autoGrad.avgLoss
 
     var Gradient = autoGrad.avgGrad
@@ -116,7 +116,7 @@ class DFP extends Optimizer with Param {
       for (epoch <- 1 to iterNum) {
         if (sum(abs(Dk)) <= MIN_DK_EPS || converged) {
           println(s"converged at iter ${epoch-1}!")
-          val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
+          val acc = ClassificationMetrics.accuracy_score(predict(X), y)
           log_print(epoch-1, acc, J)
           break
         }
@@ -237,7 +237,7 @@ class DFP extends Optimizer with Param {
 
         if (verbose) {
           if (epoch % printPeriod == 0 || epoch == iterNum) {
-            val acc = ClassificationMetrics.accuracy_score(predict(X), Y)
+            val acc = ClassificationMetrics.accuracy_score(predict(X), y)
             log_print(epoch, acc, J)
           }
         }

@@ -10,7 +10,7 @@ import com.lx.algos.ml.utils.MatrixTools
   * @author lx on 1:53 PM 20/11/2017
   */
 
-
+//TODO 未来将fit方法分离，采用每个优化算法，单独被调用的模式
 trait Optimizer extends WeightVector{
 
   //迭代终止条件
