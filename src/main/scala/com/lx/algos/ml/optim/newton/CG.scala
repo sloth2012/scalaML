@@ -6,7 +6,7 @@ import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{AutoGrad, Param}
+import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}
@@ -18,10 +18,9 @@ import scala.util.control.Breaks.{break, breakable}
   */
 
 
-
-//共轭梯度法FR
-class CGFR extends Optimizer with Param{
-  protected def init_param(): CGFR = {
+//共轭梯度法之Fletcher-Reeves method
+class CG extends Optimizer with Param {
+  protected def init_param(): CG = {
     setParams(Seq(
       "lambda" -> 0.15, // 正则化权重,weigjht decay，未设置时无用
       "verbose" -> false, //打印日志
@@ -87,21 +86,32 @@ class CGFR extends Optimizer with Param{
 
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
-    val y_format = format_y(DenseMatrix(y).reshape(y.size, 1), loss)
+    val y_format = format_y(DenseMatrix.create(y.size, 1, y.toArray), loss)
 
-    val autoGrad = new AutoGrad(x, y_format, _theta, loss, penaltyNorm, lambda)
-    var J = autoGrad.avgLoss
-
-    var Gradient = autoGrad.avgGrad
-
-    var Dk = -Gradient //n * 1
     breakable {
       var converged = false
+      var Dk: DenseMatrix[Double] = null
+      var Gradient: DenseMatrix[Double] = null
+      //I, 单位矩阵
+      val I = DenseMatrix.eye[Double](x.cols)
+      var J: Double = 0
       for (epoch <- 1 to iterNum) {
+        val (new_x, new_y) = MatrixTools.shuffle(x, y_format)
+        val autoGrad = new AutoGrad(new_x, new_y, _theta, loss, penaltyNorm, lambda)
+
+        val theta_old = _theta
+        val grad_old = autoGrad.avgGrad
+
+        if (epoch == 1) { //init
+          Gradient = grad_old
+          Dk = -grad_old //n * 1
+          J = autoGrad.avgLoss
+        }
+
         if (sum(abs(Dk)) <= MIN_DK_EPS || converged) {
-          println(s"converged at iter ${epoch-1}!")
+          println(s"converged at iter ${epoch - 1}!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
-          log_print(epoch-1, acc, J)
+          log_print(epoch - 1, acc, J)
           break
         }
 
@@ -182,8 +192,6 @@ class CGFR extends Optimizer with Param{
         }
         //        println(s"optimal alpha in epoch $epoch is $alpha")
 
-        val theta_old = _theta
-        val grad_old = autoGrad.updateTheta(theta_old).avgGrad
         _theta = _theta + alpha * Dk
         autoGrad.updateTheta(_theta)
 

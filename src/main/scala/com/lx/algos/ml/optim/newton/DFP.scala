@@ -6,7 +6,7 @@ import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{AutoGrad, Param}
+import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}
@@ -94,7 +94,7 @@ class DFP extends Optimizer with Param {
   }
 
   // this is python source code: http://dataunion.org/20714.html
-  def fit(X: Matrix[Double], y: Seq[Double]): DFP = {
+  def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
 
     assert(X.rows == y.size && X.rows > 0)
 
@@ -103,17 +103,24 @@ class DFP extends Optimizer with Param {
     val y_format = format_y(DenseMatrix.create(y.size, 1, y.toArray), loss)
 
     Hessian = DenseMatrix.eye[Double](x.cols)
-
-    val autoGrad = new AutoGrad(x, y_format, _theta, loss, penaltyNorm, lambda)
-    var J = autoGrad.avgLoss
-
-    var Gradient = autoGrad.avgGrad
-
-    var Dk = -Gradient //n * 1
-
     breakable {
       var converged = false
+      var Dk: DenseMatrix[Double] = null
+      //I, 单位矩阵
+      val I = DenseMatrix.eye[Double](x.cols)
+      var J: Double = 0
       for (epoch <- 1 to iterNum) {
+        val (new_x, new_y) = MatrixTools.shuffle(x, y_format)
+        val autoGrad = new AutoGrad(new_x, new_y, _theta, loss, penaltyNorm, lambda)
+
+        val theta_old = _theta
+        val grad_old = autoGrad.avgGrad
+
+        if(epoch == 1) { //init
+          Dk = -grad_old //n * 1
+          J = autoGrad.avgLoss
+        }
+
         if (sum(abs(Dk)) <= MIN_DK_EPS || converged) {
           println(s"converged at iter ${epoch-1}!")
           val acc = ClassificationMetrics.accuracy_score(predict(X), y)
@@ -199,12 +206,7 @@ class DFP extends Optimizer with Param {
 
 //        println(s"optimal alpha in epoch $epoch is $alpha")
 
-        val theta_old = _theta
-        val grad_old = autoGrad.updateTheta(theta_old).avgGrad
         _theta = _theta + alpha * Dk
-
-        //update the Hessian matrix
-
         val new_J = autoGrad.updateTheta(_theta).avgLoss
 
         //here to estimate Hessian'inv
@@ -213,7 +215,7 @@ class DFP extends Optimizer with Param {
         //yk = GradNew - GradOld
         //the grad is average value
         val grad = autoGrad.avgGrad
-        val yk = grad - grad_old reshape(x.cols, 1)
+        val yk = grad - grad_old
 
         //z1 = (sk' * yk) # a value
         val z1 = (sk.t * yk).data(0)
@@ -232,7 +234,7 @@ class DFP extends Optimizer with Param {
 
           val DHessian = z2 / z1 - z4 / z3
           Hessian += DHessian
-          Dk = -Hessian * grad.reshape(x.cols, 1)
+          Dk = -Hessian * grad
         }
 
         if (verbose) {

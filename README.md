@@ -17,6 +17,7 @@ Implement some ML algorithms in scala.
     -   DFP with golden section method
     -   BFGS with golden section method
     -   CG with Fletcher-Reeves method
+    -   L-BFGS
 4.  common loss function for binary classification.
 
 

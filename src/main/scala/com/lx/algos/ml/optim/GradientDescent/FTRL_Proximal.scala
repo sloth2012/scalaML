@@ -1,11 +1,11 @@
 package com.lx.algos.ml.optim.GradientDescent
 
-import breeze.linalg.{DenseVector, Matrix}
+import breeze.linalg.{DenseMatrix, DenseVector, Matrix}
 import breeze.numerics.sqrt
 import com.lx.algos.ml.loss.LossFunction
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.Param
+import com.lx.algos.ml.utils.{MatrixTools, Param}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.breakable
@@ -123,23 +123,22 @@ class FTRL_Proximal(feature_size: Int) extends Optimizer with Param {
 
   override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
     assert(X.rows == y.size)
-
     weight_init(X.cols)
     val x = input(X).toDenseMatrix
-
     breakable {
       for (epoch <- 1 to iterNum) {
-
+        val (new_x, new_y) = MatrixTools.shuffle(x, y)
+//        val (new_x, new_y) = (x, y)
         var totalLoss: Double = 0
 
-        for (i <- 0 until X.rows) {
-          val ele = x(i, ::).t
+        for (i <- 0 until new_x.rows) {
+          val ele = new_x(i, ::).t
           val y_pred: Double = _predict(ele)
-          val y_format = format_y(y(i), loss)
+          val y_format = format_y(new_y(i), loss)
           update(ele, y_pred, y_format)
           totalLoss += loss.loss(_predict(ele), y_format)
         }
-        val avg_loss = totalLoss / x.rows
+        val avg_loss = totalLoss / new_x.rows
 
         if (verbose) {
           if (epoch % printPeriod == 0 || epoch == iterNum) {
