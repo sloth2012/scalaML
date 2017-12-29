@@ -1,7 +1,7 @@
 package com.lx.algos.ml.optim
 
 import breeze.linalg.{DenseMatrix, Matrix, norm}
-import com.lx.algos.ml.loss.{LogLoss, LossFunction}
+import com.lx.algos.ml.loss.{BinaryClassification, LogLoss, LossFunction}
 import com.lx.algos.ml.utils.MatrixTools
 
 /**
@@ -48,7 +48,7 @@ trait Optimizer extends WeightVector{
   //TODO 适应其它类型的输入，如多分类等
   protected def format_y(y: Double, loss: LossFunction): Double = {
     loss match {
-      case _ : LossFunction => if (y == 1.0) 1.0 else -1.0  //需要注意，logloss损失函数的输入标签为-1和1
+      case _ : BinaryClassification => if (y == 1.0) 1.0 else -1.0  //需要注意，logloss损失函数的输入标签为-1和1
       case _ => y
     }
   }

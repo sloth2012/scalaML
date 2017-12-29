@@ -6,9 +6,10 @@ package com.lx.algos.ml.loss
   * @author lx on 2:57 PM 15/11/2017
   */
 
-trait Classification extends LossFunction
+//仅用于处理{-1,1}这种二类的分类任务
+trait BinaryClassification extends LossFunction
 
-class HingeLoss(threshold: Double = 1) extends Classification {
+class HingeLoss(threshold: Double = 1) extends BinaryClassification {
   /** Hinge loss for binary classification tasks with y in {-1,1}
     * *
     * Parameters
@@ -30,7 +31,7 @@ class HingeLoss(threshold: Double = 1) extends Classification {
   }
 }
 
-class SquaredHingeLoss(threshold: Double = 1) extends Classification {
+class SquaredHingeLoss(threshold: Double = 1) extends BinaryClassification {
   /** Squared Hinge loss for binary classification tasks with y in {-1,1}
     * *
     * Parameters
@@ -53,7 +54,7 @@ class SquaredHingeLoss(threshold: Double = 1) extends Classification {
   }
 }
 
-class ModifiedHuber extends Classification {
+class ModifiedHuber extends BinaryClassification {
   /** Modified Huber loss for binary classification with y in {-1, 1}
     * *
     * This is equivalent to quadratically smoothed SVM with gamma = 2.
@@ -78,7 +79,7 @@ class ModifiedHuber extends Classification {
   }
 }
 
-class LogLoss extends Classification {
+class LogLoss extends BinaryClassification {
   /** Logistic regression loss for binary classification with y in {-1, 1}
     * 用于交叉熵和lR，18是对目标求导做了一部分近似优化
     */
