@@ -16,45 +16,45 @@ class NewtonTest extends FlatSpec {
   val (x, y) = DataHandler.binary_cls_data()
   val (new_x, new_y) = MatrixTools.shuffle(x, y.toArray.toSeq)
 
-  //  {
-  //    val model = new DFP
-  //    println(s"this is ${model.getClass.getSimpleName} running!")
-  //    model.set_penalty("l2")
-  //      .set_verbose(true)
-  //      .set_lambda(0.1)
-  //      .set_printPeriod(1)
-  //      .set_loss(new SquaredHingeLoss)
-  //      .fit(new_x, new_y)
+  {
+    val model = new DFP
+    println(s"this is ${model.getClass.getSimpleName} running!")
+    model.set_penalty("l2")
+      .set_verbose(true)
+      .set_lambda(0.1)
+      .set_printPeriod(1)
+      .set_loss(new SquaredHingeLoss)
+      .fit(new_x, new_y)
+
+    println(model.weight)
+  }
+
   //
-  //    println(model.weight)
-  //  }
-  //
-  //  //
-  //  {
-  //    val model = new BFGS
-  //    println(s"this is ${model.getClass.getSimpleName} running!")
-  //    model.set_penalty("l2")
-  //      .set_verbose(true)
-  //      .set_printPeriod(1)
-  //      .set_lambda(0.1)
-  //      .set_loss(new HingeLoss)
-  //      .fit(new_x, new_y)
-  //
-  //    println(model.weight)
-  //  }
-  //
-  //  {
-  //    val model = new CG
-  //    println(s"this is ${model.getClass.getSimpleName} running!")
-  //    model.set_penalty("l2")
-  //      .set_verbose(true)
-  //      .set_printPeriod(1)
-  //      .set_lambda(0.1)
-  //      .set_loss(new HingeLoss)
-  //      .fit(new_x, new_y)
-  //
-  //    println(model.weight)
-  //  }
+  {
+    val model = new BFGS
+    println(s"this is ${model.getClass.getSimpleName} running!")
+    model.set_penalty("l2")
+      .set_verbose(true)
+      .set_printPeriod(1)
+      .set_lambda(0.1)
+      .set_loss(new HingeLoss)
+      .fit(new_x, new_y)
+
+    println(model.weight)
+  }
+
+  {
+    val model = new CG
+    println(s"this is ${model.getClass.getSimpleName} running!")
+    model.set_penalty("l2")
+      .set_verbose(true)
+      .set_printPeriod(1)
+      .set_lambda(0.1)
+      .set_loss(new HingeLoss)
+      .fit(new_x, new_y)
+
+    println(model.weight)
+  }
 
   {
     val model = new LBFGS
@@ -65,9 +65,9 @@ class NewtonTest extends FlatSpec {
       .set_printPeriod(1)
       .set_lambda(0.1)
       .set_loss(new HingeLoss)
-//      .fit(new_x, new_y)
+    //      .fit(new_x, new_y)
 
-      model.fit_Wolfe_Powell(new_x, new_y) //测试Wolfe_Powell一维搜索方法
+    model.fit_Wolfe_Powell(new_x, new_y) //测试Wolfe_Powell一维搜索方法
 
     println(model.weight)
   }
