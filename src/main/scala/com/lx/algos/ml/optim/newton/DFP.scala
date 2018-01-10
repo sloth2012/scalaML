@@ -94,7 +94,7 @@ class DFP extends Optimizer with Param {
   }
 
   // this is python source code: http://dataunion.org/20714.html
-  def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
+  override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
 
     assert(X.rows == y.size && X.rows > 0)
 
@@ -147,7 +147,6 @@ class DFP extends Optimizer with Param {
         breakable {
           while (Loop > 0) {
 //            println(s"find [a,b] loop is $Loop in epoch $epoch: ($alpha1, $alpha2), ($f1, $f2)")
-            Loop += 1
 
             if (f1 > f2) h *= 2
             else {
@@ -179,6 +178,7 @@ class DFP extends Optimizer with Param {
               f1 = f2
               f2 = f3
             }
+            Loop += 1
           }
         }
 

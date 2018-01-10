@@ -17,6 +17,7 @@ import scala.util.control.Breaks.{break, breakable}
   * @author lx on 2:46 PM 25/12/2017
   */
 
+//目前BFGS和DFP以及CG在一维搜索部分都是用的进退法，一种确定搜索区间方法。see<http://blog.csdn.net/mytestmy/article/details/16903537>
 class BFGS extends Optimizer with Param {
 
   protected def init_param(): BFGS = {
@@ -138,8 +139,6 @@ class BFGS extends Optimizer with Param {
         breakable {
           while (Loop > 0) {
             //            println(s"find [a,b] loop is $Loop in epoch $epoch: ($alpha1, $alpha2), ($f1, $f2)")
-            Loop += 1
-
             if (f1 > f2) h *= 2
             else {
               h *= -1
@@ -170,6 +169,7 @@ class BFGS extends Optimizer with Param {
               f1 = f2
               f2 = f3
             }
+            Loop += 1
           }
         }
 

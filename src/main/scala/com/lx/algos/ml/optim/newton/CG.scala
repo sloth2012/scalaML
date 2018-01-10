@@ -134,8 +134,6 @@ class CG extends Optimizer with Param {
         breakable {
           while (Loop > 0) {
             //            println(s"find [a,b] loop is $Loop in epoch $epoch: ($alpha1, $alpha2), ($f1, $f2)")
-            Loop += 1
-
             if (f1 > f2) h *= 2
             else {
               h *= -1
@@ -166,6 +164,7 @@ class CG extends Optimizer with Param {
               f1 = f2
               f2 = f3
             }
+            Loop += 1
           }
         }
 

@@ -6,10 +6,11 @@ import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param}
+import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param, TimeUtil}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.util.Random
 import scala.util.control.Breaks.{break, breakable}
 
 /**
@@ -20,6 +21,7 @@ import scala.util.control.Breaks.{break, breakable}
 
 
 //实现见Numerical Optimization第7章179页前后
+//该方法采用不精确的一维搜索，即满足Wolfe-Powell准则，见Numerical Optimization79页
 class LBFGS extends Optimizer with Param {
 
 
@@ -50,6 +52,9 @@ class LBFGS extends Optimizer with Param {
 
   init_param()
 
+  //参照<http://blog.csdn.net/mytestmy/article/details/16903537>
+  lazy val c1 = 0.1 //通常在(0,0.5)之间,指的是ρ
+  lazy val c2 = 0.4 //0.1相当于线性搜索，0.9相当于弱的线性搜索，通常取0.4，其应该在(rho,1)之间，指σ
 
   def loss = getParam[LossFunction]("loss")
 
@@ -95,7 +100,7 @@ class LBFGS extends Optimizer with Param {
 
   var pos: Int = -1 //表示yk和sk的起始点，即第一个元素的位置，用以每次只抛弃修改一个位置
 
-  def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
+  override def fit(X: Matrix[Double], y: Seq[Double]): Optimizer = {
 
     assert(X.rows == y.size && X.rows > 0)
 
@@ -116,7 +121,7 @@ class LBFGS extends Optimizer with Param {
         val theta_old = _theta
         val grad_old = autoGrad.avgGrad
 
-        if(epoch == 1) { //init
+        if (epoch == 1) { //init
           Dk = -grad_old //n * 1
           J = autoGrad.avgLoss
         }
@@ -131,7 +136,7 @@ class LBFGS extends Optimizer with Param {
         // find alpha that min f(thetaK + alpha * Dk)
         // find optimal [a,b] which contain optimal alpha
         // optimal alpha lead to min{f(theta + alpha*DK)}
-        var h = Math.random()
+        var h = Math.random() //步长
         var alpha = 0.0
 
         var (alpha1, alpha2) = (0.0, h)
@@ -147,7 +152,6 @@ class LBFGS extends Optimizer with Param {
         breakable {
           while (Loop > 0) {
             //            println(s"find [a,b] loop is $Loop in epoch $epoch: ($alpha1, $alpha2), ($f1, $f2)")
-            Loop += 1
 
             if (f1 > f2) h *= 2
             else {
@@ -179,6 +183,8 @@ class LBFGS extends Optimizer with Param {
               f1 = f2
               f2 = f3
             }
+
+            Loop += 1
           }
         }
 
@@ -216,7 +222,7 @@ class LBFGS extends Optimizer with Param {
         //yk = GradNew - GradOld
         //the grad is average value
         val grad = autoGrad.avgGrad
-        val yk = grad - grad_old  // shape=n*1
+        val yk = grad - grad_old // shape=n*1
 
         //z1 = (yk' * sk) # a value
         val z1 = (yk.t * sk).data(0)
@@ -235,10 +241,230 @@ class LBFGS extends Optimizer with Param {
           val z4 = z3.t
 
           pos = (pos + 1 + m) % m
-          if(yk_seq.size < m) {
+          if (yk_seq.size < m) {
             yk_seq :+= yk
             sk_seq :+= sk
-          }else{
+          } else {
+            yk_seq(pos) = yk
+            sk_seq(pos) = sk
+          }
+
+          val H_k = {
+            if (epoch == 1) {
+              1.0
+            } else {
+              (sk_seq(pos).t * yk_seq(pos) / (yk_seq(pos).t * yk_seq(pos))).data(0)
+            }
+          } * I
+
+          val cache_size = min(m, yk_seq.size)
+          var alpha: Seq[Double] = Nil
+          var q = grad
+
+          0 until yk_seq.size foreach {
+            i => {
+              val realpos = (pos - i + cache_size) % cache_size
+              val alphai = (1.0 / (yk_seq(realpos).t * sk_seq(realpos)) * (sk_seq(realpos).t * q)).data(0)
+
+              alpha +:= alphai //方便下次遍历，所以逆序添加元素
+              q -= alphai * yk_seq(realpos)
+            }
+          }
+
+          var r = H_k * q
+
+          0 until yk_seq.size foreach {
+            i => {
+              val realpos = (pos + i + cache_size) % cache_size
+              val beta = (1.0 / (yk_seq(realpos).t * sk_seq(realpos)) * yk_seq(realpos).t * r).data(0)
+              r += sk_seq(realpos) * (alpha(i) - beta)
+            }
+          }
+
+          Dk = -r
+        }
+        if (verbose) {
+          if (epoch % printPeriod == 0 || epoch == iterNum) {
+            val acc = ClassificationMetrics.accuracy_score(predict(X), y)
+            log_print(epoch, acc, J)
+          }
+        }
+
+        converged = Math.abs(new_J - J) < MIN_LOSS
+
+        J = new_J
+      }
+    }
+
+    this
+  }
+
+  //Wolfe-Powell准则实现版本,部分参数未提供修改接口,rho/c
+  def fit_Wolfe_Powell(X: Matrix[Double], y: Seq[Double]): Optimizer = {
+
+    assert(X.rows == y.size && X.rows > 0)
+
+    weight_init(X.cols)
+    val x = input(X).toDenseMatrix
+    val y_format = format_y(DenseMatrix.create(y.size, 1, y.toArray), loss)
+
+
+    breakable {
+      var converged = false
+      var Dk: DenseMatrix[Double] = null
+      //I, 单位矩阵
+      val I = DenseMatrix.eye[Double](x.cols)
+      var J: Double = 0 //记录当前的损失
+
+      val newThetaByAlphaFunc = (alpha: Double) => _theta + alpha * Dk //新的weight函数
+      val zoomFunc = (alpha_lo: Double, alpha_hi: Double, grad_zero: Double, f_zero: Double, autoGrad: AutoGrad) => {
+        var loop = 1
+        var low = alpha_lo
+        var high = alpha_hi
+        var alpha = low
+
+        breakable {
+          while (loop > 0) {
+
+
+            //防止区间过小
+            if (abs(high - low) < MIN_ALPHA_LOSS_EPS) {
+              break
+            }
+            //初始化，需要用到插值方法，这里用了二点二次插值
+            alpha = low - 0.5 * (low - high) / (1 - (autoGrad.updateTheta(newThetaByAlphaFunc(low)).avgLoss - autoGrad.updateTheta(newThetaByAlphaFunc(high)).avgLoss) /
+              ((autoGrad.updateTheta(newThetaByAlphaFunc(low)).avgGrad.t * Dk).data(0) * (low - high)))
+            //二分插值
+            //            alpha = (low + high) / 2
+
+//                        println(s"zoom loop $loop alpha is $alpha in ($low, $high)")
+            val f = autoGrad.updateTheta(newThetaByAlphaFunc(alpha)).avgLoss
+            if (f > f_zero + c1 * alpha * grad_zero || f >= autoGrad.updateTheta(newThetaByAlphaFunc(low)).avgLoss) {
+              high = alpha
+            }
+            else {
+              val grad = (autoGrad.avgGrad.t * Dk).data(0)
+              if (abs(grad) <= c2 * abs(grad_zero)) {
+                break
+              }
+              if (grad * (high - low) >= 0) {
+                high = low
+              }
+              low = alpha
+            }
+
+            loop += 1
+          }
+        }
+        alpha
+      }
+
+      for (epoch <- 1 to iterNum) {
+
+        val (new_x, new_y) = MatrixTools.shuffle(x, y_format)
+        val autoGrad = new AutoGrad(new_x, new_y, _theta, loss, penaltyNorm, lambda)
+
+        val theta_old = _theta
+        val grad_old = autoGrad.avgGrad
+
+        if (epoch == 1) { //init
+          Dk = -grad_old //n * 1
+          J = autoGrad.avgLoss
+        }
+
+        if (sum(abs(Dk)) <= MIN_LOSS || converged) {
+          println(s"converged at iter ${epoch - 1}!")
+          val acc = ClassificationMetrics.accuracy_score(predict(X), y)
+          log_print(epoch - 1, acc, J)
+          break
+        }
+
+        // find alpha that min f(thetaK + alpha * Dk)
+        // find optimal [a,b] which contain optimal alpha
+        // optimal alpha lead to min{f(theta + alpha*DK)}
+
+        val rnd = new Random(TimeUtil.currentMillis)
+        var h = Math.random()
+
+        val alpha1: Double = 1e-3
+        val alpha2: Double = 1000
+
+        var alpha = rnd.nextDouble() * alpha2
+
+        var loop = 1
+
+        var f_last = J
+        var alpha_last = alpha1
+
+        val grad_zero = (grad_old.t * Dk).data(0)
+
+
+        breakable {
+          while (loop > 0) {
+
+//            println(s"loop $loop alpha is $alpha")
+
+            val f_new = autoGrad.updateTheta(newThetaByAlphaFunc(alpha)).avgLoss
+
+            //J means f0
+            if (f_new > J + (c1 * alpha * grad_zero) || (loop > 1 && f_new >= f_last)) {
+              alpha = zoomFunc(alpha_last, alpha, grad_zero, J, autoGrad)
+              break
+            }
+
+            val grad_new = (autoGrad.avgGrad.t * Dk).data(0)
+            if (grad_new <= c2 * abs(grad_zero)) {
+              break
+            }
+            if (grad_new >= 0) {
+              alpha = zoomFunc(alpha, alpha_last, grad_zero, J, autoGrad)
+              break
+            }
+
+            f_last = f_new
+            alpha_last = alpha
+
+            alpha = alpha + (alpha2 - alpha) * rnd.nextDouble()
+
+            loop += 1
+          }
+        }
+
+//                println(s"optimal alpha in epoch $epoch is $alpha")
+
+        _theta = _theta + alpha * Dk
+
+        val new_J = autoGrad.updateTheta(_theta).avgLoss
+
+        //here to estimate Hessian'inv
+        //sk = ThetaNew - ThetaOld = alpha * inv(H) * Gradient
+        val sk = _theta - theta_old // shape=n*1
+        //yk = GradNew - GradOld
+        //the grad is average value
+        val grad = autoGrad.avgGrad
+        val yk = grad - grad_old // shape=n*1
+
+        //z1 = (yk' * sk) # a value
+        val z1 = (yk.t * sk).data(0)
+
+
+        //修正正定
+        if (z1 > MIN_POS_EPS) {
+
+          //z2 = (sk * sk') # a matrix
+          val z2 = sk * sk.t
+
+          //z3 = sk * yk' # a matrix
+          val z3 = sk * yk.t
+
+          //z4 = yk * sk'
+          val z4 = z3.t
+
+          pos = (pos + 1 + m) % m
+          if (yk_seq.size < m) {
+            yk_seq :+= yk
+            sk_seq :+= sk
+          } else {
             yk_seq(pos) = yk
             sk_seq(pos) = sk
           }
