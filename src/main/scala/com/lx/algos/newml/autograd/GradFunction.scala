@@ -1,6 +1,6 @@
 package com.lx.algos.newml.autograd
 
-import breeze.linalg.Matrix
+import breeze.linalg.DenseMatrix
 
 /**
   *
@@ -9,7 +9,7 @@ import breeze.linalg.Matrix
   */
 
 trait GradFunction {
-  def grad(theta: Matrix[Double], x: Matrix[Double], y: Matrix[Double] = null): Matrix[Double]
+  def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double], y: DenseMatrix[Double] = null): DenseMatrix[Double]
 
-  def value(theta: Matrix[Double], x: Matrix[Double]): Matrix[Double]
+  def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double]
 }

@@ -1,6 +1,6 @@
 package com.lx.algos.newml.loss
-import breeze.linalg.{Matrix, sum}
-import breeze.numerics.{exp, log}
+import breeze.linalg.{DenseMatrix, sum}
+import breeze.numerics.exp
 
 /**
   *
@@ -11,12 +11,12 @@ import breeze.numerics.{exp, log}
 trait ClassificationLoss extends LossFunction
 //TODO y onehotencoding, theta: (n+1)*
 class SoftmaxLoss extends ClassificationLoss {
-  override def grad(theta: Matrix[Double], x: Matrix[Double], y: Matrix[Double]): Matrix[Double] = {
-    x.t * sum(value(theta, x) - y) / x.rows
+  override def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = {
+    x.t * sum(y - value(theta, x)) / (-1.0 * x.rows)
   }
 
-  override def value(theta: Matrix[Double], x: Matrix[Double]): Matrix[Double] = {
-    val pred: Matrix[Double] = exp(x * theta)
+  override def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double] = {
+    val pred: DenseMatrix[Double] = exp(x * theta)
     pred / sum(pred)
   }
 }

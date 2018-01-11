@@ -1,6 +1,6 @@
 package com.lx.algos.newml.metrics
 
-import breeze.linalg.Matrix
+import breeze.linalg.{DenseMatrix, Matrix}
 import breeze.numerics.log
 
 /**
@@ -11,8 +11,5 @@ import breeze.numerics.log
 
 
 object ClassificationMetrics {
-  def log_loss(p: Matrix[Double], y: Matrix[Double]): Matrix[Double] = {
-    val z: Matrix[Double] = y*log(p)
-    -z
-  }
+  def log_loss(p: DenseMatrix[Double], y: DenseMatrix[Double]): DenseMatrix[Double] = -y*log(p)
 }
