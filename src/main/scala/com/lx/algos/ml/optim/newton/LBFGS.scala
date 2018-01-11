@@ -299,7 +299,7 @@ class LBFGS extends Optimizer with Param {
     this
   }
 
-  //Wolfe-Powell准则实现版本,部分参数未提供修改接口,rho/c
+  //Wolfe-Powell准则实现版本,部分参数未提供修改接口,c1/c2
   def fit_Wolfe_Powell(X: Matrix[Double], y: Seq[Double]): Optimizer = {
 
     assert(X.rows == y.size && X.rows > 0)
