@@ -71,7 +71,7 @@ object MatrixTools {
 
 
   def shuffle[T: ClassTag](X: DenseMatrix[T], y: DenseMatrix[T]): (DenseMatrix[T], DenseMatrix[T]) = {
-    val index = sys_shuffle(0 until y.size toList)
+    val index = sys_shuffle(0 until y.rows toList)
 
 
     val values_f = (m: DenseMatrix[T]) => index flatMap {
@@ -81,7 +81,7 @@ object MatrixTools {
     val new_X: DenseMatrix[T] = new DenseMatrix(X.cols, X.rows, values_f(X)).t //DenseMatrix是以row为偏移构建矩阵的，因此这里需要从列开始
 
 
-    val new_y: DenseMatrix[T] = new DenseMatrix(y.size, 1, values_f(y))
+    val new_y: DenseMatrix[T] = new DenseMatrix(y.cols, y.rows, values_f(y)).t
 
     (new_X, new_y)
   }

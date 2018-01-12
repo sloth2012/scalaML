@@ -71,8 +71,8 @@ trait Optimizer extends WeightVector{
 
   def get_minibatch(X: DenseMatrix[Double], y: DenseMatrix[Double], minibatch_size: Int): Seq[(DenseMatrix[Double], DenseMatrix[Double])] = {
 
-    assert(X.rows == y.size)
-    if (minibatch_size >= y.size) Seq((X, y))
+    assert(X.rows == y.rows)
+    if (minibatch_size >= y.rows) Seq((X, y))
     else {
       val (new_X, new_y) = MatrixTools.shuffle(X, y)
 

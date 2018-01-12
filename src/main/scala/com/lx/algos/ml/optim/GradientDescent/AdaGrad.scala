@@ -5,7 +5,7 @@ import breeze.numerics.sqrt
 import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param, SimpleAutoGrad}
+import com.lx.algos.ml.utils.{AutoGrad, Param, SimpleAutoGrad}
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 
 import scala.reflect.ClassTag

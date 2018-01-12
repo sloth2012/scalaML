@@ -5,7 +5,7 @@ import com.lx.algos.ml.loss.{LogLoss, LossFunction}
 import com.lx.algos.ml.metrics.ClassificationMetrics
 import com.lx.algos.ml.norm.{DefaultNormFunction, L1NormFunction, L2NormFunction}
 import com.lx.algos.ml.optim.Optimizer
-import com.lx.algos.ml.utils.{AutoGrad, MatrixTools, Param, SimpleAutoGrad}
+import com.lx.algos.ml.utils.{AutoGrad, Param, SimpleAutoGrad}
 
 import scala.reflect.ClassTag
 import scala.util.control.Breaks.{break, breakable}
@@ -111,7 +111,6 @@ class SGD extends Optimizer with Param {
     breakable {
       var velocity = DenseMatrix.zeros[Double](x.cols, 1)
       var last_avg_loss = Double.MaxValue
-      var last_grad = DenseMatrix.zeros[Double](x.cols, 1)
       for (epoch <- 1 to iterNum) {
 
         var totalLoss: Double = 0
@@ -141,7 +140,6 @@ class SGD extends Optimizer with Param {
 
           autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.totalLoss
-          last_grad = grad
         }
 
         val avg_loss = totalLoss / x.rows

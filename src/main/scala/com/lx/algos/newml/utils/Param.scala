@@ -1,5 +1,7 @@
 package com.lx.algos.newml.utils
 
+import breeze.linalg.{DenseMatrix, Matrix}
+
 import scala.collection.mutable
 import scala.reflect.ClassTag
 import scala.collection.immutable
@@ -39,8 +41,7 @@ object Default extends LowerPriorityImplicits {
 
 
 //参数控制
-trait Param {
-
+class Param {
   private val _param: mutable.HashMap[String, Any] = new mutable.HashMap
 
   def getParam[T: ClassTag](name: String, default: T = Default.value[T]): T = Caster.as[T](_param.getOrElse(name, default))
@@ -54,6 +55,8 @@ trait Param {
     _param ++= params
     this
   }
+
+  def getParam = _param
 }
 
 
