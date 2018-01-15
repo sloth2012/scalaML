@@ -124,14 +124,13 @@ class SGD extends Optimizer with Param {
           if (nesterov) {
             //see <https://zhuanlan.zhihu.com/p/20190387>
             //nestrov momentum update, origin paper version
-            val new_velocity = gamma * velocity - eta * grad
+            velocity = gamma * velocity - eta * grad
             val delta = gamma * gamma * velocity - (1 + gamma) * eta * grad
-            velocity = new_velocity
             _theta += delta
 
             //pytorch version, really fast. see <https://www.aiboy.pub/2017/09/10/A_Brief_Of_Optimization_Algorithms>
             //                        velocity = velocity * gamma + grad
-            //                        _theta += (-eta * velocity).toDenseMatrix.reshape(_theta.rows, 1)
+            //                        _theta += (-eta * velocity)
           } else {
             //momentum update
             velocity = gamma * velocity + grad * eta

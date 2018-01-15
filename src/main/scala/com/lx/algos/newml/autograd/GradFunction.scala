@@ -11,5 +11,5 @@ import breeze.linalg.DenseMatrix
 trait GradFunction {
   def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double], y: DenseMatrix[Double] = null): DenseMatrix[Double]
 
-  def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double]
+  def value(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null): DenseMatrix[Double]
 }

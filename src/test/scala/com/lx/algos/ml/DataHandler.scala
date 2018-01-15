@@ -1,6 +1,6 @@
 package com.lx.algos.ml
 
-import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.linalg.{Axis, DenseMatrix, DenseVector, sum}
 import com.mattg.util.FileUtil
 /**
   *
@@ -24,7 +24,6 @@ object DataHandler {
     }
 
     val cates = fileUtil.readLinesFromFile(y_path).map(_.toDouble)
-
 
     (DenseMatrix(features.toArray: _*), DenseVector(cates.toArray))
   }

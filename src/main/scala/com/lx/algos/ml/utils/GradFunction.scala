@@ -33,7 +33,7 @@ class AutoGrad(
 
   private def regular_value: Double = norm(normFunction.value(theta).toDenseVector)
 
-  def grad: DenseMatrix[Double] = (lossFunction.dLoss(value, y).t * lossFunction.grad(theta, x)).reshape(x.cols, 1) + lambda * normFunction.grad(theta, y)
+  def grad: DenseMatrix[Double] = (lossFunction.dLoss(value, y).t * lossFunction.grad(theta, x)).reshape(x.cols, 1) + lambda * normFunction.grad(theta, x)
 
   def avgGrad: DenseMatrix[Double] = grad / (1.0 * x.rows) reshape(x.cols, 1)
 

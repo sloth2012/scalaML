@@ -1,6 +1,6 @@
 package com.lx.algos.newml.optim
 
-import com.lx.algos.ml.utils.AutoGrad
+import com.lx.algos.newml.autograd.AutoGrad
 import com.lx.algos.newml.utils.Param
 
 /**
@@ -10,11 +10,6 @@ import com.lx.algos.newml.utils.Param
   */
 
 trait Optimizer{
-  val params: Param  = null//初始化参数
   val variables: Param = null//中间变量参数
-
-  var CONVERAGE_EPS: Double = 1e-5 //收敛约束
-
-  def run(autoGrad: AutoGrad): Double //每个batch更新运行
-  var counter: Int = 0 //计数器
+  def run(autoGrad: AutoGrad, epoch: Int): Unit //每个batch更新运行
 }

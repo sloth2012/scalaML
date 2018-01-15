@@ -8,10 +8,7 @@ import breeze.linalg.{DenseMatrix, DenseVector}
   * @author lx on 7:03 PM 11/01/2018
   */
 
-class WeightMatrix {
-
-  protected val MIN_LR_EPS = 1e-6
-
+trait WeightMatrix {
   protected var _theta: DenseMatrix[Double] = null
 
   def weight_init(n_features: Int, n_classes: Int): Unit = {
@@ -27,4 +24,5 @@ class WeightMatrix {
     if(_theta != null) _theta(0, ::).t
     else DenseVector.zeros(_theta.cols)
   }
+
 }

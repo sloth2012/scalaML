@@ -56,6 +56,11 @@ class Param {
     this
   }
 
+  def removeParam[T: ClassTag](name: String): Param = {
+    _param.remove(name)
+    this
+  }
+
   def getParam = _param
 }
 
