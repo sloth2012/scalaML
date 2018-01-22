@@ -1,12 +1,9 @@
 package com.lx.algos.nlp.nagao
 
-import java.io.FileWriter
-
 import com.mattg.util.FileUtil
 
 import scala.collection.mutable._
-import scala.io.Source
-import scala.util.{Failure, Sorting, Success, Try}
+import scala.util.Sorting
 import scala.util.control.Breaks.{break, breakable}
 
 /**

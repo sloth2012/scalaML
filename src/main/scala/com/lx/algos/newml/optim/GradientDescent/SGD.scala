@@ -30,7 +30,7 @@ class SGD(var lr: Double = 0.01,
     val theta = variables.getParam[DenseMatrix[Double]]("theta", autograd.theta)
 
 
-    val last_epoch = variables.getParam[Double]("epoch", 1)
+    val last_epoch = variables.getParam[Int]("epoch", 1)
 
     if(last_epoch < epoch){
 

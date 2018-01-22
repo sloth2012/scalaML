@@ -1,5 +1,6 @@
 package com.lx.algos.ml
 
+import com.lx.algos.data.DataHandler
 import com.lx.algos.ml.loss.LogLoss
 import com.lx.algos.ml.optim.GradientDescent._
 import com.lx.algos.ml.utils.MatrixTools

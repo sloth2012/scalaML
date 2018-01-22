@@ -1,10 +1,7 @@
 package com.lx.algos.newml.utils
 
-import breeze.linalg.{DenseMatrix, Matrix}
-
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.reflect.ClassTag
-import scala.collection.immutable
 
 /**
   *

@@ -1,5 +1,6 @@
 package com.lx.algos.ml
 
+import com.lx.algos.data.DataHandler
 import com.lx.algos.ml.loss.{HingeLoss, SquaredHingeLoss}
 import com.lx.algos.ml.optim.newton.{BFGS, CG, DFP, LBFGS}
 import com.lx.algos.ml.utils.MatrixTools

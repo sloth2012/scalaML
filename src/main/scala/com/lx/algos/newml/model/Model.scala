@@ -10,21 +10,22 @@ import breeze.linalg.DenseMatrix
 
 trait Model
 
-trait Estimator extends Model{
+//均需做onehotencoding
+trait Estimator[T] extends Model {
 
-  def fit(X: DenseMatrix[Double], y: DenseMatrix[Double]): Estimator
+  def fit(X: DenseMatrix[T], y: DenseMatrix[T]): Estimator[T]
 
-  def predict(X: DenseMatrix[Double]): DenseMatrix[Double]
+  def predict(X: DenseMatrix[T]): DenseMatrix[T]
 
-  def predict_proba(X: DenseMatrix[Double]): DenseMatrix[Double]
+  def predict_proba(X: DenseMatrix[T]): DenseMatrix[T]
 }
 
 
-trait Transformer extends Model{
-  def fit(X: DenseMatrix[Double]): Transformer
+trait Transformer[A, B] extends Model {
+  def fit(X: DenseMatrix[A]): Transformer[A, B]
 
-  def transform(X: DenseMatrix[Double]): DenseMatrix[Double]
+  def transform(X: DenseMatrix[A]): DenseMatrix[B]
 
 
-  def fit_transform(X: DenseMatrix[Double]): DenseMatrix[Double] = fit(X).transform(X)
+  def fit_transform(X: DenseMatrix[A]): DenseMatrix[B] = fit(X).transform(X)
 }

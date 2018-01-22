@@ -1,6 +1,6 @@
-package com.lx.algos.ml
+package com.lx.algos.data
 
-import breeze.linalg.{Axis, DenseMatrix, DenseVector, sum}
+import breeze.linalg.{DenseMatrix, DenseVector}
 import com.mattg.util.FileUtil
 /**
   *

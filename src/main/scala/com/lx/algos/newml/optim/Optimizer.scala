@@ -10,6 +10,6 @@ import com.lx.algos.newml.utils.Param
   */
 
 trait Optimizer{
-  val variables: Param = null//中间变量参数
+  val variables: Param = new Param//中间变量参数
   def run(autoGrad: AutoGrad, epoch: Int): Unit //每个batch更新运行
 }
