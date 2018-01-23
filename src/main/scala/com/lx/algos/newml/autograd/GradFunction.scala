@@ -9,7 +9,9 @@ import breeze.linalg.DenseMatrix
   */
 
 trait GradFunction {
-  def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double], y: DenseMatrix[Double] = null): DenseMatrix[Double]
+  //求导
+  def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): DenseMatrix[Double]
 
-  def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double]
+  //loss值
+  def loss(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): Double
 }

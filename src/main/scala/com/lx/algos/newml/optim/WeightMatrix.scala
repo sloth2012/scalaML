@@ -11,18 +11,26 @@ import breeze.linalg.{DenseMatrix, DenseVector}
 trait WeightMatrix {
   protected var _theta: DenseMatrix[Double] = null
 
+  protected var fit_intercept = true //是否求偏置
+
   def weight_init(n_features: Int, n_classes: Int): Unit = {
-    if(_theta == null) _theta = DenseMatrix.rand[Double](n_features + 1, n_classes)
+    if (_theta == null) _theta = DenseMatrix.rand[Double](n_features, n_classes)
   }
 
   def weight: DenseMatrix[Double] = {
-    if(_theta != null) _theta(1 until _theta.rows, ::)
-    else null
+
+    _theta match {
+      case x if (x == null || fit_intercept == false) => _theta
+      case _ => _theta(1 until _theta.rows, ::)
+    }
   }
 
   def intercept: DenseVector[Double] = {
-    if(_theta != null) _theta(0, ::).t
-    else DenseVector.zeros(_theta.cols)
+    _theta match {
+      case x if (x == null) => null
+      case y if (fit_intercept) => _theta(0, ::).t
+      case _ => DenseVector.zeros(_theta.cols)
+    }
   }
 
 }

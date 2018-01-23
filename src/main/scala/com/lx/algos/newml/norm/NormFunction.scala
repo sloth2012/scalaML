@@ -1,6 +1,6 @@
 package com.lx.algos.newml.norm
 
-import breeze.linalg.DenseMatrix
+import breeze.linalg.{DenseMatrix, sum}
 import breeze.numerics.{abs, signum}
 import com.lx.algos.newml.autograd.GradFunction
 
@@ -15,18 +15,19 @@ trait NormFunction extends GradFunction
 object L1Norm extends NormFunction {
   override def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): DenseMatrix[Double] = signum(theta)
 
-  override def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double] = DenseMatrix.ones[Double](x.rows, theta.rows) * abs(theta)
+  override def loss(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): Double = sum(abs(theta))
 }
 
 object L2Norm extends NormFunction {
   override def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): DenseMatrix[Double] = theta
 
-  override def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double] = DenseMatrix.ones[Double](x.rows, theta.cols) * (theta.t * theta) / 2.0
+  override def loss(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): Double = sum(theta.t * theta) / 2.0
+
 
 }
 
 object DefaultNorm extends NormFunction {
   override def grad(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): DenseMatrix[Double] = DenseMatrix.zeros[Double](theta.rows, theta.cols)
 
-  override def value(theta: DenseMatrix[Double], x: DenseMatrix[Double]): DenseMatrix[Double] = DenseMatrix.zeros[Double](x.rows, theta.cols)
+  override def loss(theta: DenseMatrix[Double], x: DenseMatrix[Double] = null, y: DenseMatrix[Double] = null): Double = 0
 }

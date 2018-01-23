@@ -22,7 +22,7 @@ object ClassificationMetrics {
     assert(p.rows == y.rows && p.cols == y.cols)
 
     val p_index = argmax(p, Axis._1)
-    val y_index = argmax(p, Axis._1)
+    val y_index = argmax(y, Axis._1)
 
     var counter: Double = 0
 

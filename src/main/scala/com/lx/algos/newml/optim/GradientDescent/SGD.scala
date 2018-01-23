@@ -16,53 +16,54 @@ import com.lx.algos.newml.optim.Optimizer
 class SGD(var lr: Double = 0.01,
           var momentum: Double = 0.9,
           var penalty: NormFunction = L2Norm,
-          var nestrov: Boolean = false,
+          var nestrov: Boolean = true,
           var earlyStop: Boolean = true,
           var eps: Double = 1e-5 //迭代loss收敛约束,配合earlyStop
          ) extends Optimizer {
 
 
-
   override def run(autograd: AutoGrad, epoch: Int): Unit = {
     val grad = autograd.grad
-    val totalLoss = variables.getParam[Double]("totalLoss", 0)
-    val runsamples = variables.getParam[Double]("samples", 0)
-    val theta = variables.getParam[DenseMatrix[Double]]("theta", autograd.theta)
+    var totalLoss = variables.getParam[Double]("totalLoss", 0)
+    var runsamples = variables.getParam[Double]("samples", 0)
+    var theta = variables.getParam[DenseMatrix[Double]]("theta", autograd.theta)
 
 
     val last_epoch = variables.getParam[Int]("epoch", 1)
 
-    if(last_epoch < epoch){
-
+    if (last_epoch < epoch) {
       val avg_loss = totalLoss / runsamples
       val last_avg_loss = variables.getParam[Double]("avg_loss", 0)
 
-      if(earlyStop && abs(avg_loss - last_avg_loss) < eps) {
-        println(s"the optimizer converged in epoch $epoch!")
-      }else {
-        variables.setParam("epoch", epoch)
-      }
-    }else {
-
-      val velocity = variables.getParam[DenseMatrix[Double]]("velocity", DenseMatrix.zeros[Double](grad.rows, grad.cols))
-      val (new_velocity, new_theta) = if (nestrov) {
-        val new_velocity: DenseMatrix[Double] = momentum * velocity + grad
-        val new_theta = theta - lr * (grad + momentum * new_velocity) //未改变对象，是对象的引用，值的改变
-
-        (new_velocity, new_theta)
+      if (earlyStop && abs(avg_loss - last_avg_loss) < eps) {
+        println(s"the optimizer converged in epoch ${epoch - 1}!") //上一轮结束后收敛的
+        variables.setParam("converged", true)
       } else {
-        val new_velocity: DenseMatrix[Double] = momentum * velocity + grad * lr
-        val new_theta = theta - new_velocity
+        variables.setParam("epoch", epoch)
+        variables.setParam("avg_loss", avg_loss)
+      }
+      runsamples = 0
+      totalLoss = 0
+    }
 
-        (new_velocity, new_theta)
+    val converged = variables.getParam[Boolean]("converged", false)
+    if (converged == false) {
+
+      var velocity = variables.getParam[DenseMatrix[Double]]("velocity", DenseMatrix.zeros[Double](grad.rows, grad.cols))
+      if (nestrov) {
+        velocity = momentum * velocity + grad
+        theta -= lr * (grad + momentum * velocity)
+      } else {
+        velocity = momentum * velocity + grad * lr
+        theta  -= velocity
       }
 
-      var new_totalLoss = totalLoss + autograd.updateTheta(new_theta).totalLoss
-      var new_runsamples = runsamples + autograd.size
-      variables.setParam("velocity", new_velocity)
-      variables.setParam("theta", new_theta)
-      variables.setParam("totalLoss", new_totalLoss)
-      variables.setParam("samples", new_runsamples)
+      totalLoss += autograd.updateTheta(theta).loss * autograd.size
+      runsamples += autograd.size
+      variables.setParam("velocity", velocity)
+      variables.setParam("theta", theta)
+      variables.setParam("totalLoss", totalLoss)
+      variables.setParam("samples", runsamples)
     }
   }
 }

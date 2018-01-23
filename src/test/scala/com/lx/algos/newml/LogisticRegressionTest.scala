@@ -1,8 +1,11 @@
 package com.lx.algos.newml
 
 import com.lx.algos.data.DataHandler
+import com.lx.algos.newml.metrics.ClassificationMetrics
 import com.lx.algos.newml.model.classification.LogisticRegression
 import com.lx.algos.newml.model.preprocess.OneHotEncoding
+import com.lx.algos.newml.norm.{DefaultNorm, L1Norm, L2Norm}
+import com.lx.algos.newml.optim.GradientDescent.SGD
 import org.scalatest.FlatSpec
 
 /**
@@ -21,9 +24,19 @@ class LogisticRegressionTest extends FlatSpec{
   ohe.fit(new_y)
 
   val label = ohe.transform(new_y)
+
   val model = new LogisticRegression
 
+  val solver = new SGD
+  solver.nestrov = false
+  solver.lr = 0.01
+
   model.verbose = true
+  model.iterNum = 2000
+  model.logPeriod = 1
+  model.batchSize = 128
+  model.normf = L2Norm
+  model.solver = solver
 
   model.fit(data, label)
 

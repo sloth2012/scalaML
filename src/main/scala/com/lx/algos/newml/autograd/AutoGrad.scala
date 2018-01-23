@@ -1,6 +1,6 @@
 package com.lx.algos.newml.autograd
 
-import breeze.linalg.{DenseMatrix, norm, sum}
+import breeze.linalg.{DenseMatrix, sum}
 import com.lx.algos.newml.loss.LossFunction
 import com.lx.algos.newml.norm.NormFunction
 
@@ -23,13 +23,9 @@ class AutoGrad(
 
   def size = x.rows
 
-  def value: DenseMatrix[Double] = lossFunction.value(theta, x)
-
   def grad: DenseMatrix[Double] = lossFunction.grad(theta, x, y) + lambda * normFunction.grad(theta, x)
 
-  def avgLoss: Double = totalLoss / x.rows
-
-  def totalLoss: Double = sum(lossFunction.value(theta, x) + lambda * normFunction.value(theta, x))
+  def loss: Double = lossFunction.loss(theta, x, y) + lambda * normFunction.loss(theta)
 
   def updateTheta(newTheta: DenseMatrix[Double]): AutoGrad = {
     assert(newTheta.cols == theta.cols && newTheta.rows == theta.rows)

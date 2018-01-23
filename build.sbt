@@ -5,7 +5,7 @@ name := "scalaML"
 
 version := "0.1"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 crossScalaVersions := Seq("2.11.2", "2.10.3")
 
