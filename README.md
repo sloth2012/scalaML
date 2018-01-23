@@ -18,8 +18,11 @@ Implement some ML algorithms in scala.
     -   BFGS with golden section method
     -   CG with Fletcher-Reeves method
     -   L-BFGS (implement with line search method of Wolfe-Powell)
-4.  common loss function for binary classification.
+4.  common loss function for binary classification.  
+5.  algos in package newml:
+    -    redesign ml for multi-classification
 
 
 **note**: 
-1.  this is just tested for binary classification(especially logloss) now. 
+1.  the package ml is just tested for binary classification(especially logloss) now. 
+2.  the package newml is still in development.
