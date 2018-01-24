@@ -119,7 +119,7 @@ class AdaGrad extends Optimizer with Param {
           val autoGrad = new AutoGrad(sub_x, sub_y, _theta, loss, penaltyNorm, lambda)
           val grad = autoGrad.avgGrad //n*1 matrix
 
-          cache_grad = grad *:* grad
+          cache_grad += grad *:* grad
           val lr_grad = eta / sqrt(cache_grad + eps)
           _theta -= lr_grad *:* grad
 

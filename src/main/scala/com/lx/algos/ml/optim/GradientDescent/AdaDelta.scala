@@ -39,7 +39,7 @@ class AdaDelta extends AdaGrad{
     breakable {
       var last_avg_loss = Double.MaxValue
       var cache_grad = DenseMatrix.zeros[Double](x.cols, 1)
-      var cache_delateT = DenseMatrix.zeros[Double](x.cols, 1)
+      var cache_deltaT = DenseMatrix.zeros[Double](x.cols, 1)
 
       for (epoch <- 1 to iterNum) {
         var totalLoss: Double = 0
@@ -50,10 +50,10 @@ class AdaDelta extends AdaGrad{
           val grad = autoGrad.avgGrad //n*1 matrix
 
           cache_grad =  gamma * cache_grad + (1 - gamma) * grad *:* grad
-          val lr_grad = sqrt(cache_delateT + eps) / sqrt(cache_grad + eps)
-          val deltaT = -lr_grad *:* grad
-          cache_delateT = gamma * cache_delateT + (1 - gamma) * deltaT *:* deltaT
-          _theta += deltaT
+          val lr_grad = sqrt(cache_deltaT + eps) / sqrt(cache_grad + eps)
+          val deltaT = lr_grad *:* grad
+          cache_deltaT = gamma * cache_deltaT + (1 - gamma) * deltaT *:* deltaT
+          _theta -= deltaT
 
           autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.totalLoss

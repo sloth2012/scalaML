@@ -3,9 +3,8 @@ package com.lx.algos.newml
 import com.lx.algos.data.DataHandler
 import com.lx.algos.newml.metrics.ClassificationMetrics
 import com.lx.algos.newml.model.classification.LogisticRegression
-import com.lx.algos.newml.model.preprocess.OneHotEncoding
-import com.lx.algos.newml.norm.{DefaultNorm, L1Norm, L2Norm}
-import com.lx.algos.newml.optim.GradientDescent.SGD
+import com.lx.algos.newml.norm.L2Norm
+import com.lx.algos.newml.optim.GradientDescent.{AdaDelta, AdaMax, Adam, RMSProp}
 import org.scalatest.FlatSpec
 
 /**
@@ -22,10 +21,7 @@ class LogisticRegressionTest extends FlatSpec{
 
   val model = new LogisticRegression
 
-  val solver = new SGD
-  solver.nestrov = false
-  solver.lr = 0.01
-//  solver.earlyStop = false
+  val solver = new AdaMax
 
   model.verbose = true
   model.iterNum = 2000

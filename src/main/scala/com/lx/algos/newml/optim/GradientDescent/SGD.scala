@@ -18,9 +18,9 @@ class SGD(var lr: Double = 0.01,
           var nestrov: Boolean = true
          ) extends Optimizer {
 
-  override def run(autograd: AutoGrad, epoch: Int): Unit = {
-    val grad = autograd.grad
-    var theta = variables.getParam[DenseMatrix[Double]]("theta", autograd.theta)
+  override def run(autoGrad: AutoGrad, epoch: Int): Unit = {
+    val grad = autoGrad.grad
+    var theta = variables.getParam[DenseMatrix[Double]]("theta", autoGrad.theta)
 
     var velocity = variables.getParam[DenseMatrix[Double]]("velocity", DenseMatrix.zeros[Double](grad.rows, grad.cols))
     if (nestrov) {
