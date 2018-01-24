@@ -4,7 +4,7 @@ import com.lx.algos.data.DataHandler
 import com.lx.algos.newml.metrics.ClassificationMetrics
 import com.lx.algos.newml.model.classification.LogisticRegression
 import com.lx.algos.newml.norm.L2Norm
-import com.lx.algos.newml.optim.GradientDescent.{AdaDelta, AdaMax, Adam, RMSProp}
+import com.lx.algos.newml.optim.GradientDescent._
 import org.scalatest.FlatSpec
 
 /**
@@ -21,7 +21,7 @@ class LogisticRegressionTest extends FlatSpec{
 
   val model = new LogisticRegression
 
-  val solver = new AdaMax
+  val solver = new Adam
 
   model.verbose = true
   model.iterNum = 2000

@@ -59,7 +59,7 @@ class AdaMax extends Adam {
           val bias_moment1 = cache_moment1 / (1 - Math.pow(beta1, epoch))
           val bias_moment2 = cache_moment2
 
-          _theta -= eta * bias_moment1 / (bias_moment2 + eps) / cache_moment2
+          _theta -= eta * bias_moment1 / (bias_moment2 + eps)
 
           autoGrad.updateTheta(_theta)
           totalLoss += autoGrad.totalLoss

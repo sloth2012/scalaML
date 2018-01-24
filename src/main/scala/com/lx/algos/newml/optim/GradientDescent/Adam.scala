@@ -43,7 +43,7 @@ class Adam(var lr: Double = 0.002,
 
     theta -= lr * bias1 / (sqrt(bias2) + eps)
 
-    variables.setParam("grad1", grad2)
+    variables.setParam("grad1", grad1)
     variables.setParam("grad2", grad2)
     variables.setParam("theta", theta)
   }
