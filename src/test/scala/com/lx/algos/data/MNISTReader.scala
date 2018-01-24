@@ -6,7 +6,7 @@ import java.nio.channels.Channels
 import java.nio.file.{Files, Paths}
 import java.util.zip.GZIPInputStream
 
-import breeze.linalg.{DenseMatrix, DenseVector, convert}
+import breeze.linalg.{DenseMatrix, DenseVector}
 
 /**
   *

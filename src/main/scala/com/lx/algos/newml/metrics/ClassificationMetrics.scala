@@ -14,7 +14,7 @@ object ClassificationMetrics {
   def log_loss(p: DenseMatrix[Double], y: DenseMatrix[Double]): Double = {
 
     assert(p.rows == y.rows && p.cols == y.cols)
-    sum(-y.t * log(p)) / y.rows
+    sum(-y *:* log(p)) / y.rows
   }
 
   //假设输入的都是onehot之后的结果

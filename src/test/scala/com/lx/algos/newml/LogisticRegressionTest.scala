@@ -15,20 +15,17 @@ import org.scalatest.FlatSpec
   */
 
 class LogisticRegressionTest extends FlatSpec{
-  val (x, y) = DataHandler.binary_cls_data
 
-  val data = x
-  val new_y = y.toDenseMatrix.reshape(x.rows, 1)
-
-  val ohe  = new OneHotEncoding[Double]
-  ohe.fit(new_y)
-  val label = ohe.transform(new_y)
+  val mnist = DataHandler.mnist_data
+  val (x, y) = (mnist.trainDataset.featuresMatrices, mnist.trainDataset.labelMatrices)
+  val (xt, yt) = (mnist.testDataset.featuresMatrices, mnist.testDataset.labelMatrices)
 
   val model = new LogisticRegression
 
   val solver = new SGD
   solver.nestrov = false
   solver.lr = 0.01
+//  solver.earlyStop = false
 
   model.verbose = true
   model.iterNum = 2000
@@ -37,6 +34,10 @@ class LogisticRegressionTest extends FlatSpec{
   model.normf = L2Norm
   model.solver = solver
 
-  model.fit(data, label)
+  model.fit(x, y)
 
+  val yt_pred = model.predict(xt)
+
+  val acc = ClassificationMetrics.accuracy_score(yt_pred, yt)
+  println(s"test acc is: $acc")
 }
