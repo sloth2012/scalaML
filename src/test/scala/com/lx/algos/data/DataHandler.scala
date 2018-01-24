@@ -11,7 +11,7 @@ import com.mattg.util.FileUtil
 object DataHandler {
   val fileUtil = new FileUtil
 
-  def binary_cls_data() = {
+  def binary_cls_data = {
 
     val root = getClass.getResource("/data/ml/binary_classify").getPath
     val f_path = root + "/binary_cls_features"
@@ -28,8 +28,10 @@ object DataHandler {
     (DenseMatrix(features.toArray: _*), DenseVector(cates.toArray))
   }
 
+  def mnist_data = Mnist
+
   def main(args: Array[String]): Unit = {
-    val (x, y) = binary_cls_data()
+    val (x, y) = binary_cls_data
     println(y.length)
   }
 }

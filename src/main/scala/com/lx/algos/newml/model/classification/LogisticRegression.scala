@@ -33,9 +33,7 @@ class LogisticRegression extends Estimator[Double] with WeightMatrix {
   private val lossf: ClassificationLoss = new SoftmaxLoss
 
   private def logger(epoch: Int, acc: Double, avg_loss: Double): Unit = {
-
-    val weightNorm = norm(weight, Axis._1)
-    println(s"iteration $epoch: norm:${sum(weightNorm)}, bias:${sum(intercept)}, avg_loss:$avg_loss, acc:${acc.formatted("%.6f")}")
+    println(s"iteration $epoch: avg_loss:$avg_loss, acc:${acc.formatted("%.6f")}")
   }
 
   override def fit(X: DenseMatrix[Double], y: DenseMatrix[Double]): Estimator[Double] = {

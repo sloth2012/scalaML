@@ -15,14 +15,13 @@ import org.scalatest.FlatSpec
   */
 
 class LogisticRegressionTest extends FlatSpec{
-  val (x, y) = DataHandler.binary_cls_data()
+  val (x, y) = DataHandler.binary_cls_data
 
   val data = x
   val new_y = y.toDenseMatrix.reshape(x.rows, 1)
 
   val ohe  = new OneHotEncoding[Double]
   ohe.fit(new_y)
-
   val label = ohe.transform(new_y)
 
   val model = new LogisticRegression

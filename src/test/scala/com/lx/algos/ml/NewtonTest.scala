@@ -14,7 +14,7 @@ import org.scalatest.FlatSpec
 
 class NewtonTest extends FlatSpec {
 
-  val (x, y) = DataHandler.binary_cls_data()
+  val (x, y) = DataHandler.binary_cls_data
   val (new_x, new_y) = MatrixTools.shuffle(x, y.toArray.toSeq)
 
   {

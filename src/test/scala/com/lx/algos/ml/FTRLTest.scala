@@ -13,7 +13,7 @@ import org.scalatest.FlatSpec
   */
 
 class FTRLTest extends FlatSpec {
-  val (x, y) = DataHandler.binary_cls_data()
+  val (x, y) = DataHandler.binary_cls_data
   val (new_x, new_y) = MatrixTools.shuffle(x, y.toArray.toSeq)
 
   val loss = new LogLoss

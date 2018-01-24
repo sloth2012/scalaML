@@ -12,41 +12,38 @@ import scala.collection.mutable.{HashMap, HashSet}
   */
 
 class OneHotEncoding[T] extends Transformer[T, Double] {
-  val encodeMap: HashMap[Int, Double] = HashMap.empty
+  val encode: HashMap[T, Double] = HashMap.empty
 
-  val labels: HashSet[DenseVector[T]] = HashSet.empty
+  def decode: Map[Double, T] = encode.map{
+    case (k: T, v: Double) => (v, k)
+  }.toMap
 
   //传入为矩阵，若为一维以上，则将整个向量进行onehotencoding
   override def fit(X: DenseMatrix[T]): Transformer[T, Double] = {
+    if(X.cols != 1) throw new RuntimeException("label's shape should be nsamples * 1!")
+
     0 until X.rows map { i =>
       val ele = X(i, ::).t
-      labels.add(ele)
-      val key = hashLabel(ele)
-      encodeMap += (key -> encodeMap.getOrElse(key, encodeMap.size))
+      encode += ele(0) -> encode.getOrElse(ele(0), encode.size)
     }
 
     this
   }
 
   override def transform(X: DenseMatrix[T]): DenseMatrix[Double] = {
-    val res = DenseMatrix.zeros[Double](X.rows, encodeMap.size)
+    if(X.cols != 1) throw new RuntimeException("label's shape should be nsamples * 1!")
+    val res = DenseMatrix.zeros[Double](X.rows, encode.size)
     0 until X.rows map { i =>
-      val index: Double = encodeMap.getOrElse(hashLabel(X(i, ::).t), -1)
+      val ele = X(i, ::).t
+      val index: Double = encode.getOrElse(ele(0), -1)
 
       if (index != -1) {
         res(i, index.toInt) = 1
       }
       else {
-        throw new RuntimeException("Unseen Label in data!")
+        throw new RuntimeException(s"unseen label ${ele(0)} in data!")
       }
     }
-
     res
   }
-
-
-  def hashLabel(data: DenseVector[T]): Int = {
-    data.hashCode()
-  }
-
 }
