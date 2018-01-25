@@ -3,7 +3,6 @@ package com.lx.algos.newml.optim.GradientDescent
 import breeze.linalg.{DenseMatrix, max}
 import breeze.numerics.{abs, pow}
 import com.lx.algos.newml.autograd.AutoGrad
-import com.lx.algos.newml.optim.Optimizer
 
 /**
   *
@@ -14,7 +13,7 @@ import com.lx.algos.newml.optim.Optimizer
 class AdaMax(var lr: Double = 0.002,
              var beta: (Double, Double) = (0.9, 0.999),
              var eps: Double = 1e-8
-            ) extends Optimizer {
+            ) extends GDOptimizer {
 
   override def run(autoGrad: AutoGrad, epoch: Int): Unit = {
     val grad = autoGrad.grad

@@ -3,7 +3,6 @@ package com.lx.algos.newml.optim.GradientDescent
 import breeze.linalg.DenseMatrix
 import com.lx.algos.newml.autograd.AutoGrad
 import com.lx.algos.newml.norm.{L2Norm, NormFunction}
-import com.lx.algos.newml.optim.Optimizer
 
 /**
   *
@@ -16,7 +15,7 @@ class SGD(var lr: Double = 0.01,
           var momentum: Double = 0.9,
           var penalty: NormFunction = L2Norm,
           var nestrov: Boolean = true
-         ) extends Optimizer {
+         ) extends GDOptimizer {
 
   override def run(autoGrad: AutoGrad, epoch: Int): Unit = {
     val grad = autoGrad.grad
@@ -28,7 +27,7 @@ class SGD(var lr: Double = 0.01,
       theta -= lr * (grad + momentum * velocity)
     } else {
       velocity = momentum * velocity + grad * lr
-      theta -= velocity //theta直接使用了对象的引用，改变了内部的值，因此不用回写到velocity
+      theta -= velocity
     }
     variables.setParam("velocity", velocity)
     variables.setParam("theta", theta)

@@ -5,6 +5,7 @@ import com.lx.algos.newml.metrics.ClassificationMetrics
 import com.lx.algos.newml.model.classification.LogisticRegression
 import com.lx.algos.newml.norm.L2Norm
 import com.lx.algos.newml.optim.GradientDescent._
+import com.lx.algos.newml.optim.newton.LBFGS
 import org.scalatest.FlatSpec
 
 /**
@@ -21,7 +22,7 @@ class LogisticRegressionTest extends FlatSpec{
 
   val model = new LogisticRegression
 
-  val solver = new Adam
+  val solver = new LBFGS
 
   model.verbose = true
   model.iterNum = 2000

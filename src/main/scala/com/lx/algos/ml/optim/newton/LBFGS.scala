@@ -384,8 +384,6 @@ class LBFGS extends Optimizer with Param {
         // optimal alpha lead to min{f(theta + alpha*DK)}
 
         val rnd = new Random(TimeUtil.currentMillis)
-        var h = Math.random()
-
         val alpha1: Double = 1e-3
         val alpha2: Double = 1000
 

@@ -8,6 +8,7 @@ import com.lx.algos.newml.metrics.ClassificationMetrics
 import com.lx.algos.newml.model.Estimator
 import com.lx.algos.newml.norm.{L2Norm, NormFunction}
 import com.lx.algos.newml.optim.GradientDescent.SGD
+import com.lx.algos.newml.optim.newton.NewtonOptimizer
 import com.lx.algos.newml.optim.{EarlyStopping, Optimizer, WeightMatrix}
 
 import scala.util.control.Breaks.{break, breakable}
@@ -51,10 +52,14 @@ class LogisticRegression extends Estimator[Double] with WeightMatrix {
 
     breakable {
       for (epoch <- 1 to iterNum) {
-        val batch_data = dataset.get_minibatch(batchSize, false)
+        //主要针对若是采用newton这类二阶方法，不能执行minibatch的情况
+        val real_batchSize = if(solver.isInstanceOf[NewtonOptimizer]) data.rows else batchSize
+        val batch_data = dataset.get_minibatch(real_batchSize, false)
         for ((sub_x, sub_y) <- batch_data) {
           val autoGrad = new AutoGrad(sub_x, sub_y, _theta, lossf, normf, lambda)
           solver.run(autoGrad, epoch)
+          //更新权重
+          _theta = solver.variables.getParam[DenseMatrix[Double]]("theta")
         }
 
         val avg_loss = ClassificationMetrics.log_loss(predict_proba(X), y)

@@ -1,8 +1,7 @@
 package com.lx.algos.newml.optim.GradientDescent
-import breeze.linalg.{DenseMatrix, max}
+import breeze.linalg.DenseMatrix
 import breeze.numerics.{pow, sqrt}
 import com.lx.algos.newml.autograd.AutoGrad
-import com.lx.algos.newml.optim.Optimizer
 
 /**
   *
@@ -13,7 +12,7 @@ import com.lx.algos.newml.optim.Optimizer
 class Nadam(var lr: Double = 0.002,
             var beta: (Double, Double) = (0.99, 0.999),
             var eps: Double = 1e-8
-           ) extends Optimizer {
+           ) extends GDOptimizer {
 
   private def moment_schedule(time: Int): Double = (1 - 0.5 * pow(0.96, time / 250.0)) * beta._1
 

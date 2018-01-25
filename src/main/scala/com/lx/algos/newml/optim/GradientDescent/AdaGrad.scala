@@ -3,7 +3,6 @@ package com.lx.algos.newml.optim.GradientDescent
 import breeze.linalg.DenseMatrix
 import breeze.numerics.sqrt
 import com.lx.algos.newml.autograd.AutoGrad
-import com.lx.algos.newml.optim.Optimizer
 
 /**
   *
@@ -13,7 +12,7 @@ import com.lx.algos.newml.optim.Optimizer
 
 class AdaGrad(var lr: Double = 0.01,
              var eps: Double = 1e-8
-             ) extends Optimizer{
+             ) extends GDOptimizer {
   override def run(autoGrad: AutoGrad, epoch: Int): Unit = {
     val grad = autoGrad.grad
     var theta = variables.getParam[DenseMatrix[Double]]("theta", autoGrad.theta)
