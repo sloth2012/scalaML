@@ -57,7 +57,6 @@ class SoftmaxLoss extends ClassificationLoss {
     -x.t * (y - predict_proba(theta, x)) / x.rows.toDouble
   }
 
-  //TODO log值为0
   override def loss(theta: DenseMatrix[Double], x: DenseMatrix[Double], y: DenseMatrix[Double]): Double = {
     -sum(y *:* log(predict_proba(theta, x))) / x.rows.toDouble
   }
