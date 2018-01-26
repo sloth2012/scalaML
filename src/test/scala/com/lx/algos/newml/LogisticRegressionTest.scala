@@ -1,5 +1,6 @@
 package com.lx.algos.newml
 
+import breeze.linalg.DenseMatrix
 import com.lx.algos.data.DataHandler
 import com.lx.algos.newml.metrics.ClassificationMetrics
 import com.lx.algos.newml.model.classification.LogisticRegression
