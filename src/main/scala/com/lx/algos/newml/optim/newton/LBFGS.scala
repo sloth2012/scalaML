@@ -14,7 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 class LBFGS(var m: Int = 8, //保存最近的m次信息，sk和yk，一般在3到20之间
-            var method: LineSearch = LineSearch.wolfePowell, //一维搜索方法
+            var method: LineSearch = LineSearch.goldSection, //一维搜索方法
             var tolerance_grad: Double = 1e-5 //termination tolerance on first order optimality
            ) extends NewtonOptimizer {
 
@@ -73,7 +73,6 @@ class LBFGS(var m: Int = 8, //保存最近的m次信息，sk和yk，一般在3�
           sk_seq(pos) = sk
         }
 
-        val I = DenseMatrix.eye[Double](theta.rows * theta.cols)
         val H_k: Double = {
           if (epoch == 1) {
             1.0
