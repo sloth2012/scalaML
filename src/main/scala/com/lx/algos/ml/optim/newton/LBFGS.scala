@@ -92,7 +92,7 @@ class LBFGS extends Optimizer with Param {
 
   private val MIN_POS_EPS = 0.0 //正定矩阵的约束，修正版的BFGS使用，主要是发现直接要求正定，效果很差，但确实大部分时候，yk.t*sk的值又非常接近于0，因此做了一个最小阈值
 
-  private val MIN_ALPHA_LOSS_EPS = 0.01
+  private val MIN_ALPHA_LOSS_EPS = 1e-8
 
   var yk_seq: ArrayBuffer[DenseMatrix[Double]] = ArrayBuffer.empty[DenseMatrix[Double]]
 
@@ -212,7 +212,7 @@ class LBFGS extends Optimizer with Param {
 
         //        println(s"optimal alpha in epoch $epoch is $alpha")
 
-        _theta = _theta + alpha * Dk
+        _theta += alpha * Dk
 
         val new_J = autoGrad.updateTheta(_theta).avgLoss
 
@@ -449,31 +449,7 @@ class LBFGS extends Optimizer with Param {
         //修正正定
         if (z1 > MIN_POS_EPS) {
 
-          //z2 = (sk * sk') # a matrix
-          val z2 = sk * sk.t
-
-          //z3 = sk * yk' # a matrix
-          val z3 = sk * yk.t
-
-          //z4 = yk * sk'
-          val z4 = z3.t
-
-          pos = (pos + 1 + m) % m
-          if (yk_seq.size < m) {
-            yk_seq :+= yk
-            sk_seq :+= sk
-          } else {
-            yk_seq(pos) = yk
-            sk_seq(pos) = sk
-          }
-
-          val H_k = {
-            if (epoch == 1) {
-              1.0
-            } else {
-              (sk_seq(pos).t * yk_seq(pos) / (yk_seq(pos).t * yk_seq(pos))).data(0)
-            }
-          } * I
+          val H_k = (sk.t * yk / (yk.t * yk)).data(0)
 
           val cache_size = min(m, yk_seq.size)
           var alpha: Seq[Double] = Nil
@@ -497,6 +473,15 @@ class LBFGS extends Optimizer with Param {
               val beta = (1.0 / (yk_seq(realpos).t * sk_seq(realpos)) * yk_seq(realpos).t * r).data(0)
               r += sk_seq(realpos) * (alpha(i) - beta)
             }
+          }
+
+          pos = (pos + 1 + m) % m
+          if (yk_seq.size < m) {
+            yk_seq :+= yk
+            sk_seq :+= sk
+          } else {
+            yk_seq(pos) = yk
+            sk_seq(pos) = sk
           }
 
           Dk = -r

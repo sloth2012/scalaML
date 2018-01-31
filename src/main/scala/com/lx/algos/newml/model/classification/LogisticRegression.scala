@@ -1,6 +1,6 @@
 package com.lx.algos.newml.model.classification
 
-import breeze.linalg.DenseMatrix
+import breeze.linalg.{DenseMatrix, norm}
 import com.lx.algos.newml.autograd.AutoGrad
 import com.lx.algos.newml.dataset.Dataset
 import com.lx.algos.newml.loss.{ClassificationLoss, SoftmaxLoss}
@@ -31,12 +31,12 @@ class LogisticRegression extends Estimator[Double] with WeightMatrix {
 
   var solver: Optimizer = new SGD
   var normf: NormFunction = L2Norm
-  val earlyStop: Boolean = true
+  var earlyStop: Boolean = true
 
   private val lossf: ClassificationLoss = new SoftmaxLoss
 
   private def logger(epoch: Int, acc: Double, avg_loss: Double): Unit = {
-    println(s"iteration $epoch: avg_loss:$avg_loss, acc:${acc.formatted("%.6f")}")
+    println(s"iteration $epoch: norm(theta): ${norm(_theta.toDenseVector)}, avg_loss:$avg_loss, acc:${acc.formatted("%.6f")}")
   }
 
   override def fit(X: DenseMatrix[Double], y: DenseMatrix[Double]): Estimator[Double] = {
@@ -55,7 +55,7 @@ class LogisticRegression extends Estimator[Double] with WeightMatrix {
         //主要针对若是采用newton这类二阶方法，不能执行minibatch的情况
         val real_batchSize = if(solver.isInstanceOf[NewtonOptimizer]) data.rows else batchSize
         val batch_data = dataset.get_minibatch(real_batchSize, false)
-        for ((sub_x, sub_y) <- batch_data) {
+        for ((sub_x, sub_y) <- batch_data){
           val autoGrad = new AutoGrad(sub_x, sub_y, _theta, lossf, normf, lambda)
           solver.run(autoGrad, epoch)
           //更新权重
@@ -72,7 +72,7 @@ class LogisticRegression extends Estimator[Double] with WeightMatrix {
           }
         }
 
-        if(earlStopping.converged){
+        if(earlyStop && earlStopping.converged){
           break
         }
       }

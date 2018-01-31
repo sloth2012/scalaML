@@ -18,21 +18,11 @@ sealed trait LineSearch {
 
 //一种不精确一维搜索实现方法，满足WolfePowell准则
 //参照<http://blog.csdn.net/mytestmy/article/details/16903537>
-class WolfePowell(var c1: Double = 0.1, //通常在(0,0.5)之间,指的是ρ
-                  var c2: Double = 0.4, //0.1相当于线性搜索，0.9相当于弱的线性搜索，通常取0.4，其应该在(rho,1)之间，指σ
-                  var alpha0: Double = 1, //初始化alpha
-                  var alpha_min: Double = 1e-5, //alpha最小值约束
-                  var eps: Double = 1e-8, //区间收敛值
-                  var maxIterNum: Int = 100
+class WolfePowell(var c1: Double = 1e-4, //通常在(0,0.5)之间,指的是ρ
+                  var c2: Double = 0.9, //0.1相当于线性搜索，0.9相当于弱的线性搜索，通常取0.4，其应该在(c1,1)之间，指σ
+                  var interval_eps: Double = 1e-8, //区间收敛值
+                  var maxIterNum: Int = 1000
                  ) extends LineSearch {
-
-
-  def isInInterval(value: Double, range: (Double, Double)) = {
-    val (a, b) = if (range._1 > range._2) range.swap else range
-
-    value >= a && value <= b
-  }
-
 
   def zoom(alpha_lo: Double,
            alpha_hi: Double,
@@ -46,46 +36,31 @@ class WolfePowell(var c1: Double = 0.1, //通常在(0,0.5)之间,指的是ρ
     var high = alpha_hi
     var alpha = low
 
-
-    //        if(alpha_lo > alpha_hi) {
-    //          throw new RuntimeException(s"Invalid interval [$low, $high] of stepsize in zoom procedure")
-    //        }
-
-    var last_alpha = low //用于排除多次更新alpha收敛
+    var last_alpha = 0.0 //用于排除多次更新alpha收敛
     var converged_counter = 0
     val counterMax = 10
 
     val flat_dk = dk.reshape(dk.size, 1)
 
-
     breakable {
-      while (loop < maxIterNum && abs(high - low) >= eps) {
-        println(s"zoom loop $loop is alpha($alpha) in [$low, $high]")
+      while (loop < maxIterNum && abs(high - low) >= interval_eps) {
+//        println(s"zoom loop $loop is alpha($alpha) in [$low, $high]")
 
-        val low_loss = autoGrad.updateTheta(theta + low * dk).loss
+        var low_loss = autoGrad.updateTheta(theta + low * dk).loss
 
-        if (abs(last_alpha - alpha) < eps) {
-          converged_counter += 1
-        } else {
-          converged_counter = 0
-        }
         last_alpha = alpha
-        if (converged_counter > counterMax) {
-          alpha = Interpolation.bisection.getValue(low, high)
-        } else {
-          val low_grad = (autoGrad.grad.reshape(dk.size, 1).t * flat_dk).data(0)
-          val high_loss = autoGrad.updateTheta(theta + high * dk).loss
+        val low_grad = (autoGrad.grad.reshape(dk.size, 1).t * flat_dk).data(0)
+        val high_loss = autoGrad.updateTheta(theta + high * dk).loss
 
-          alpha = Interpolation.quadratic.getValue(low, low_loss, high, high_loss, low_grad)
-        }
+        alpha = Interpolation.quadratic.getValue(low, low_loss, high, high_loss, low_grad)
         val f = autoGrad.updateTheta(theta + alpha * dk).loss
-        //可能会一直陷入到该分支循环，通过last_alpha控制
         if (f > f_zero + c1 * alpha * grad_zero || f >= low_loss) {
           high = alpha
         }
         else {
           val grad_new: Double = (autoGrad.grad.reshape(dk.size, 1).t * flat_dk).data(0)
           if (abs(grad_new) <= c2 * abs(grad_zero)) {
+            //            println("stop normally!")
             break
           }
           if (grad_new * (high - low) >= 0) {
@@ -97,6 +72,7 @@ class WolfePowell(var c1: Double = 0.1, //通常在(0,0.5)之间,指的是ρ
         loop += 1
       }
     }
+
     alpha
   }
 
@@ -114,12 +90,12 @@ class WolfePowell(var c1: Double = 0.1, //通常在(0,0.5)之间,指的是ρ
 
     //采用二次插值来寻找切换点
     val interpolation = new QuadraticInterpolation
-
-    var alpha = alpha0
+    var alpha = 1.0
 
     var loop = 1
     breakable {
       while (loop < maxIterNum) {
+//        println(s"getStep in loop $loop alpha($alpha)")
         val f = autoGrad.updateTheta(theta + alpha * dk).loss
         val grad_new: Double = (autoGrad.grad.reshape(grad.size, 1).t * flat_dk).data(0)
 
@@ -137,33 +113,27 @@ class WolfePowell(var c1: Double = 0.1, //通常在(0,0.5)之间,指的是ρ
           break
         }
 
-        alpha = interpolation.getValue(0, f_zero, alpha, f, grad_zero) //x1, f1, x2, f2, f1'
-
-        //        if(isInInterval(alpha, (alpha_min, al)))
-        println(s"getStep loop $loop is alpha($alpha)")
-
         f_last = f
         alpha_last = alpha
 
+        alpha = interpolation.getValue(0, f_zero, alpha, f, grad_zero) //x1, f1, x2, f2, f1'
         loop += 1
       }
     }
-
-    if (loop >= maxIterNum) alpha = alpha_min //未找到合适的，就返回一个最小的
-
     alpha
   }
 }
 
 
-class GoldSection(var maxIterNum: Int = 100,
+class GoldSection(var init_alpha: Double = 0.0,
+                  var maxIterNum: Int = 100,
                   var eps: Double = 1e-5
                  ) extends LineSearch {
   override def getStep(autoGrad: AutoGrad, dk: DenseMatrix[Double]): Double = {
     val theta = autoGrad.theta
 
     var h = Math.random() //步长
-    var alpha = 0.0 //init alpha
+    var alpha = init_alpha //init alpha
 
     var (alpha1, alpha2) = (alpha, h)
     var (theta1, theta2) = (theta + alpha1 * dk, theta + alpha2 * dk)
@@ -181,7 +151,9 @@ class GoldSection(var maxIterNum: Int = 100,
       //进退法找区间
       while (loop < maxIterNum) {
 
-        if (f1 > f2) h *= 2
+        if (f1 > f2) {
+          h *= 2
+        }
         else {
           h *= -1
 
@@ -197,8 +169,6 @@ class GoldSection(var maxIterNum: Int = 100,
         val alpha3 = alpha2 + h
         val theta3 = theta + alpha3 * dk
         val f3 = autoGrad.updateTheta(theta3).loss
-
-        //            println(s"f3 - f2 is ${f3 - f2}")
 
         if (f3 > f2) {
           a = Math.min(alpha1, alpha3)
@@ -220,10 +190,10 @@ class GoldSection(var maxIterNum: Int = 100,
     //######################################
     // 黄金分割法
     //######################################
-    loop = 0
+    loop = 1
     breakable {
       // 黄金分割法找步长
-      while (loop < maxIterNum) {
+      while (loop > 0) {
         alpha1 = a + 0.382 * (b - a)
         alpha2 = a + 0.618 * (b - a)
 
@@ -244,7 +214,8 @@ class GoldSection(var maxIterNum: Int = 100,
         loop += 1
       }
     }
-//    println(s"find best alpha with loop $loop is $alpha")
+//    println(s"loss: ${autoGrad.updateTheta(theta + alpha * dk).loss}")
+    //    println(s"find best alpha with loop $loop is $alpha")
     alpha
   }
 }

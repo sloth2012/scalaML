@@ -21,9 +21,9 @@ class AutoGrad(
               ) {
 
 
-  def size = x.rows
+  def sampleSize = x.rows
 
-  def grad: DenseMatrix[Double] = lossFunction.grad(theta, x, y) + lambda * normFunction.grad(theta, x)
+  def grad: DenseMatrix[Double] = (lossFunction.grad(theta, x, y) + lambda * normFunction.grad(theta, x))
 
   def loss: Double = lossFunction.loss(theta, x, y) + lambda * normFunction.loss(theta)
 

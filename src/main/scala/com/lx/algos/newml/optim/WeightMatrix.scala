@@ -14,7 +14,10 @@ trait WeightMatrix {
   protected var fit_intercept = true //是否求偏置
 
   def weight_init(n_features: Int, n_classes: Int): Unit = {
-    if (_theta == null) _theta = DenseMatrix.rand[Double](n_features, n_classes)
+    if (_theta == null) {
+      _theta = DenseMatrix.ones[Double](n_features, n_classes)
+
+    }
   }
 
   def weight: DenseMatrix[Double] = {
