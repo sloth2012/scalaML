@@ -25,4 +25,3 @@ Implement some ML algorithms in scala.
 
 **note**: 
 1.  the package ml is just tested for binary classification(especially logloss) now. 
-2.  the package newml is still in development.
